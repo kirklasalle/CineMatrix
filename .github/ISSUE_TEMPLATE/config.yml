@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 CineMatrix Documentation & Guides
+    url: https://github.com/kirklasalle/CineMatrix/tree/main/docs
+    about: Read user manuals, developer architecture guides, and API specs.
+  - name: 💬 Community Discussions & Film Craft
+    url: https://github.com/kirklasalle/CineMatrix/discussions
+    about: Share scripts, custom visual prompts, animatics, and directing tips.

@@ -1,0 +1,26 @@
+name: 📄 Script / Document Format Request
+description: Request support for a new screenplay, comic, stage play, or animation script format.
+labels: ["format-request", "parsers"]
+body:
+  - type: input
+    id: format_name
+    attributes:
+      label: Format Name & Extension
+      placeholder: "e.g., Celtx (.celtx), Movie Magic (.mms), Trelby, Fade In (.fadein)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: specification
+    attributes:
+      label: Format Specification / File Structure
+      description: Is this an XML, JSON, binary, or plaintext structure? Link to official specs if available.
+    validations:
+      required: true
+
+  - type: textarea
+    id: sample_snippet
+    attributes:
+      label: Sample File Content / Snippet
+      description: Provide a minimal sample snippet representing scenes, character cues, and parentheticals.
+      render: text

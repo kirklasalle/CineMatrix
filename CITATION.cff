@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use CineMatrix in your research, production, or creative workflows, please cite it as below."
+authors:
+  - family-names: "LaSalle"
+    given-names: "Kirk"
+title: "CineMatrix: Open-Source Cinema Pre-Visualization & Directing Studio"
+version: 3.2.0
+date-released: 2026-08-14
+url: "https://github.com/kirklasalle/CineMatrix"
+keywords:
+  - "storyboard"
+  - "screenplay"
+  - "previsualization"
+  - "animatics"
+  - "filmmaking"
+  - "cinematography"
+  - "fastapi"
+  - "react"
+  - "opencv"

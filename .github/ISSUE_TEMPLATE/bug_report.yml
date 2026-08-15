@@ -1,0 +1,77 @@
+name: 🐛 Bug Report
+description: Report an issue or unexpected behavior in CineMatrix.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue! Please provide as much detail as possible to help us reproduce and fix the bug.
+
+  - type: input
+    id: version
+    attributes:
+      label: CineMatrix Version / Commit Hash
+      description: What version or git commit hash are you running?
+      placeholder: "e.g., v3.2.0 or commit 1e3fea0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Operating System & Browser
+      options:
+        - Windows 11 / Windows 10
+        - macOS (Apple Silicon / Intel)
+        - Linux (Ubuntu / Debian / Fedora)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected Studio Module
+      options:
+        - Script Ingestion & Parsing
+        - Storyboard Discovery & Gallery
+        - 24 FPS Video Animatics
+        - Story Doctor (15 Beats)
+        - Character Consistency Library
+        - Virtual Table Read Studio
+        - Graphic Novel Studio
+        - Audio Scoring & Foley
+        - Master Export Suite (PDF / CSV / ZIP / MP4)
+        - Example Scripts Hub
+        - Desktop Launcher / Server Lifecycle
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what happened.
+      placeholder: "When uploading a .fdx screenplay, scene 3 failed to generate cinematography specs..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Provide step-by-step instructions.
+      value: |
+        1. Go to '...'
+        2. Upload script '...'
+        3. Click on '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal / Console Logs
+      description: Paste any error traceback from the backend terminal or browser developer console (F12).
+      render: shell

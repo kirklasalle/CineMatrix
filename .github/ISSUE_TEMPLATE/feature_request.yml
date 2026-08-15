@@ -1,0 +1,50 @@
+name: 💡 Feature Proposal
+description: Suggest a new capability, visual style, or workflow enhancement for CineMatrix.
+labels: ["enhancement", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make CineMatrix even better for filmmakers, screenwriters, or artists? Let us know!
+
+  - type: input
+    id: title_summary
+    attributes:
+      label: Feature Title
+      placeholder: "e.g., Support for Final Draft 13 revision colors or Blender 3D camera export"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      options:
+        - Cinematography & Camera Optics
+        - Screenplay Parsing & Formats
+        - Video Animatics & Motion Interpolation
+        - Story Structure & Narrative Analytics
+        - Voice & Table Read Synthesis
+        - Graphic Novel & Print Publishing
+        - Export Formats (EDL, Final Cut XML, Blender)
+        - UI / UX & Keyboard Shortcuts
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: Is your feature request related to a specific workflow problem?
+      placeholder: "As a director, I need to export camera data directly to Unreal Engine / Blender..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see.
+      placeholder: "Add an export option in the Master Export Suite that outputs camera Euler angles and FOV..."
+    validations:
+      required: true
