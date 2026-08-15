@@ -42,6 +42,8 @@ class OpenRouterProvider(BaseProvider):
         raise NotImplementedError("OpenRouter does not support native image generation yet.")
 
     async def verify_connection(self) -> Dict[str, Any]:
+        if not self.client.api_key:
+            return {"status": "error", "message": "OpenRouter API Key is missing. Please enter your API Key."}
         start_time = time.time()
         logging.info(f"OpenRouter: Verifying connection...")
         try:
@@ -80,10 +82,11 @@ class OpenRouterProvider(BaseProvider):
         try:
             # Use direct httpx to avoid OpenAI SDK overhead for large model lists
             headers = {
-                "Authorization": f"Bearer {self.client.api_key}",
                 "HTTP-Referer": "https://github.com/kirklasalle/storyboard",
                 "X-Title": "Storyboard AI"
             }
+            if self.client.api_key:
+                headers["Authorization"] = f"Bearer {self.client.api_key}"
             async with httpx.AsyncClient() as client:
                 response = await client.get("https://openrouter.ai/api/v1/models", headers=headers, timeout=10)
                 if response.status_code == 200:
@@ -106,6 +109,8 @@ class OpenRouterProvider(BaseProvider):
             return [{"id": "meta-llama/llama-3.1-8b-instruct:free", "name": "Llama 3.1 8B (Free)"}]
 
     async def get_balance(self) -> Dict[str, Any]:
+        if not self.client.api_key:
+            return {"status": "error", "message": "OpenRouter API Key is missing."}
         logging.info("OpenRouter: Fetching account balance...")
         headers = {"Authorization": f"Bearer {self.client.api_key}"}
         async with httpx.AsyncClient() as client:

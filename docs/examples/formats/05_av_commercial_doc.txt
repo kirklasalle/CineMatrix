@@ -1,0 +1,36 @@
+PROJECT: ECHOES OF THE DEEP
+FORMAT: AUDIO / VISUAL (AV) TWO-COLUMN SCRIPT
+CLIENT: OCEANIC PRESERVATION TRUST
+DURATION: 60 SECONDS
+
+===============================================================================
+VISUAL                                  | AUDIO
+===============================================================================
+EXT. OPEN OCEAN - SUNRISE (0:00 - 0:10) | [MUSIC: Gentle acoustic guitar and warm
+WIDE DRONE SHOT: Golden sunlight       | orchestral swell]
+reflecting across endless calm blue    | 
+water. Pod of dolphins breaches in      | NARRATOR (V.O.)
+slow motion.                            | Life began in the silent cradles of 
+                                        | the open sea. Three billion years of 
+                                        | memory, flowing through every tide.
+----------------------------------------+--------------------------------------
+EXT. CORAL REEF - DAY (0:10 - 0:25)     | [SFX: Subtle bubbling, underwater 
+MACRO CLOSE-UP: Vibrant bioluminescent  | ambience]
+coral polyps pulsing with color.        | 
+Clownfish and sea turtles darting       | NARRATOR (V.O.)
+through intricate coral architecture.   | Today, these ancient nurseries face 
+                                        | their greatest trial. But hope is 
+                                        | not lost.
+----------------------------------------+--------------------------------------
+INT. MARINE RESEARCH VESSEL (0:25 - 0:45| [MUSIC: Triumphant strings rise]
+MEDIUM SHOT: DR. MAYA LIN (30s) placing | 
+nursery-grown coral fragments onto an   | DR. MAYA LIN
+artificial reef lattice. Her smile is   | When we restore a single square meter of 
+filled with determination.              | reef, the entire ecosystem awakens.
+----------------------------------------+--------------------------------------
+EXT. REEF RESTORATION SITE (0:45 - 1:00)| [MUSIC: Grand inspirational crescendo]
+HERO WIDE SHOT: Vast restored coral     | 
+nursery teeming with millions of fish.  | NARRATOR (V.O.)
+SUPER: "Protect the Source. Protect Us."| Join the restoration. Visit oceanprotect.org
+LOGO FADE: Oceanic Preservation Trust.  | 
+===============================================================================

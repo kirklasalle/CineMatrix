@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="1">
+  <Content>
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. RAIN-SLICKED ALLEY - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Fog drifts low over cobblestones. Neon signs from a distant bar blink RED and GREEN through the mist.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>SAM VANCE (40s, trench coat, fedora pulled low, cigarette glowing) steps out of the shadow of a rusted fire escape.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SAM</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(voiceover)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>This town had a way of chewing up honest men and spitting them out into the gutter. Tonight, I was next on the menu.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. SAM VANCE INVESTIGATIONS - CONTINUOUS</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Venetian blinds carve stripes of amber street light across a clutter of case files and empty bourbon glasses.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>VIVIAN DRAKE (30s, emerald satin dress, fur collar, eyes like polished jade) sits in the leather client chair.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>VIVIAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You're late, Mr. Vance. In my business, five minutes is the difference between an alibi and a funeral.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SAM</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>In my business, Miss Drake, funerals are just another billing opportunity. Who are we following?</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>FADE OUT.</Text>
+    </Paragraph>
+  </Content>
+</FinalDraft>

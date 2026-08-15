@@ -1,8 +1,8 @@
 from providers.base_provider import BaseProvider
-from typing import Optional
+from typing import Optional, List, Dict, Any
 import httpx
 import json
-from typing import List, Dict, Any
+import logging
 
 class LocalProvider(BaseProvider):
     def __init__(self, base_url: str = "http://localhost:11434", model_name: str = "llama3"):

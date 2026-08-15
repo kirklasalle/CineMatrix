@@ -147,20 +147,43 @@ Rules:
                 "camera_movement": analysis.get("camera_movement", "Static"),
                 "lens": analysis.get("lens", "50mm"),
                 "lighting": analysis.get("lighting", "Natural"),
+                "motion_preset": "dolly_in",
             }
+
+            # ── Auto-Generate Visual Image for Frame ──
+            try:
+                visual_res = await self.generate_visual(
+                    frame_description=frame["description"] or scene.get("heading", f"Scene {i+1}"),
+                    genre=genre,
+                    storyboard_style=visual_style.get("id", "oscar_prestige"),
+                )
+                frame["image_path"] = visual_res.get("image_url")
+                frame["model_used"] = visual_res.get("model_used")
+            except Exception as v_err:
+                logger.warning(f"ENGINE: Auto-visual generation fallback for scene {i+1}: {v_err}")
+                frame["image_path"] = self._get_pollinations_url(
+                    f"{visual_style.get('name', 'Cinematic')} storyboard frame: {frame['description']}",
+                    seed=(i + 1) * 42,
+                )
+
             logger.info(
                 f"ENGINE: Scene {i+1} ✓ | "
                 f"intensity={frame['intensity_score']:.1f} | "
                 f"type={frame['intensity_type']} | "
-                f"shot={frame['shot_type']}"
+                f"shot={frame['shot_type']} | image={'✓' if frame.get('image_path') else '✗'}"
             )
             return frame
         except Exception as e:
             logger.error(f"ENGINE: Failed scene {i+1}: {e}", exc_info=True)
+            fallback_desc = scene_text[:300] if scene_text else "Scene content unavailable"
+            fallback_img = self._get_pollinations_url(
+                f"{visual_style.get('name', 'Cinematic')} cinematic frame: {fallback_desc}",
+                seed=(i + 1) * 42,
+            )
             return {
                 "scene_number": i + 1,
                 "heading": scene.get("heading", f"Scene {i + 1}"),
-                "description": scene_text[:300] if scene_text else "Scene content unavailable",
+                "description": fallback_desc,
                 "intensity_score": 5.0,
                 "intensity_type": "Lull",
                 "moment_summary": "Analysis unavailable — using raw scene text",
@@ -168,6 +191,8 @@ Rules:
                 "camera_movement": "Static",
                 "lens": "50mm",
                 "lighting": "Natural",
+                "image_path": fallback_img,
+                "motion_preset": "dolly_in",
             }
 
     async def generate_visual(
@@ -351,10 +376,12 @@ Rules:
             })
         return result
 
-    def _get_pollinations_url(self, prompt: str) -> str:
-        """Generate a free image URL via Pollinations.ai (no API key required)."""
+    def _get_pollinations_url(self, prompt: str, seed: Optional[int] = None) -> str:
+        """Generate a free high-resolution 16:9 cinematic image URL via Pollinations.ai (no API key required)."""
         import urllib.parse
+        import random
         clean_prompt = prompt.strip().replace('\n', ' ').replace('  ', ' ')
         encoded = urllib.parse.quote(clean_prompt[:500])
-        return f"https://image.pollinations.ai/prompt/{encoded}?width=1024&height=576&nologo=true"
+        s = seed if seed is not None else random.randint(1000, 999999)
+        return f"https://image.pollinations.ai/prompt/{encoded}?width=1024&height=576&nologo=true&seed={s}&model=flux"
 

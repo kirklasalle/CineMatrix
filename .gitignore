@@ -53,3 +53,10 @@ htmlcov/
 # Temporary files
 *.tmp
 *.temp
+
+# Media generation output caches
+backend/static/videos/*.mp4
+backend/static/audio/*.wav
+logs/*.json
+!backend/static/videos/.gitkeep
+!backend/static/audio/.gitkeep

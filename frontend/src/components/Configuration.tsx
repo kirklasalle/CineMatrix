@@ -31,6 +31,7 @@ interface ConfigurationProps {
 
 export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
     const [apiKey, setApiKey] = useState('');
+    const [hasSavedApiKey, setHasSavedApiKey] = useState(false);
     const [balanceInfo, setBalanceInfo] = useState<any>(null);
     const [isBalanceLoading, setIsBalanceLoading] = useState(false);
     const [baseUrl, setBaseUrl] = useState('http://localhost:11434');
@@ -80,10 +81,16 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
         }
     }, [provider, baseUrl]);
 
-    const fetchModels = async (currentProvider?: string, currentApiKey?: string, currentBaseUrl?: string) => {
+    const fetchModels = async (
+        currentProvider?: string,
+        currentApiKey?: string,
+        currentBaseUrl?: string,
+        preferredModel?: string
+    ): Promise<string> => {
         const p = currentProvider || provider;
         addLog(`Fetching models for ${p}...`);
         try {
+            const targetModel = (preferredModel || selectedModel || '').trim();
             const config = {
                 type: p,
                 api_key: currentApiKey || apiKey,
@@ -106,18 +113,21 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                 setModels(data);
                 addLog(`Discovered ${data.length} models for ${p}`);
                 if (data.length > 0) {
-                    const exists = data.find((m: any) => m.id === selectedModel);
-                    if (!selectedModel || !exists) {
-                        setSelectedModel(data[0].id);
-                    }
+                    const exists = data.find((m: any) => m.id === targetModel);
+                    const resolvedModel = exists ? targetModel : data[0].id;
+                    setSelectedModel(resolvedModel);
+                    return resolvedModel;
                 }
+                return targetModel;
             } else {
                 addLog(`Model discovery failed for ${p}`, 'error');
+                return targetModel;
             }
         } catch (e: any) {
             addNetworkLog({ method: 'POST', url: '/providers/models', error: e.message });
             addLog(`Model discovery error: ${e.message}`, 'error');
             console.error('Failed to fetch models', e);
+            return (preferredModel || selectedModel || '').trim();
         }
     };
 
@@ -130,7 +140,8 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                 if (data) {
                     const type = data.type as any;
                     setProvider(type);
-                    setApiKey(data.api_key || '');
+                    setApiKey('');
+                    setHasSavedApiKey(Boolean(data.has_api_key));
                     setStoryboardStyle(data.storyboard_style || 'oscar_prestige');
 
                     const defaults: Record<string, string> = {
@@ -142,11 +153,12 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                         google: ''
                     };
                     setBaseUrl(data.base_url || defaults[type] || '');
-                    setSelectedModel(data.model_name || '');
-                    onSave(data);
+                    const savedModel = (data.model_name || '').trim();
+                    setSelectedModel(savedModel);
                     addLog(`Config loaded: ${data.type}`);
-                    // Fetch models for the saved config
-                    fetchModels(data.type, data.api_key, data.base_url);
+                    // Fetch models for the saved config and keep/pick a valid model.
+                    const resolvedModel = await fetchModels(data.type, '', data.base_url, savedModel);
+                    onSave({ ...data, model_name: resolvedModel || savedModel });
                 }
             }
         } catch (e) {
@@ -160,13 +172,14 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
         const p = provider;
         addLog(`Testing ${p} connection...`);
         try {
+            const resolvedModel = await fetchModels(p, apiKey, baseUrl, selectedModel);
             const config = {
                 id: p,
                 name: p.charAt(0).toUpperCase() + p.slice(1),
                 type: p,
-                api_key: apiKey,
+                api_key: apiKey.trim(),
                 base_url: baseUrl,
-                model_name: selectedModel,
+                model_name: resolvedModel || selectedModel,
                 storyboard_style: storyboardStyle,
             };
 
@@ -185,8 +198,8 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                 setTestStatus('success');
                 setLastDuration(data.duration || '');
                 addLog(`Connection successful (${data.duration})`);
+                setHasSavedApiKey(Boolean(apiKey.trim()) || hasSavedApiKey);
                 onSave(config);
-                fetchModels(p, apiKey, baseUrl);
             } else {
                 setTestStatus('error');
                 setTestMessage(data.message);
@@ -208,13 +221,15 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
         const p = provider;
         addLog(`Saving ${p} configuration...`);
         try {
+            // Resolve provider model list first so we persist a valid model selection.
+            const resolvedModel = await fetchModels(p, apiKey, baseUrl, selectedModel);
             const config = {
                 id: p,
                 name: p.charAt(0).toUpperCase() + p.slice(1),
                 type: p,
-                api_key: apiKey,
+                api_key: apiKey.trim(),
                 base_url: baseUrl,
-                model_name: selectedModel,
+                model_name: resolvedModel || selectedModel,
                 storyboard_style: storyboardStyle,
             };
 
@@ -230,8 +245,10 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
 
             if (resp.ok) {
                 addLog(`Configuration saved for ${p}`);
+                setHasSavedApiKey(Boolean(apiKey.trim()) || hasSavedApiKey);
                 onSave(config);
-                fetchModels(p, apiKey, baseUrl);
+                // Refresh once more after save to capture any provider-side changes.
+                await fetchModels(p, apiKey, baseUrl, config.model_name);
             } else {
                 addLog(`Failed to save configuration`, 'error');
             }
@@ -246,7 +263,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
         try {
             const config = {
                 type: provider,
-                api_key: apiKey,
+                api_key: apiKey.trim(),
                 base_url: baseUrl,
                 model_name: selectedModel,
                 storyboard_style: storyboardStyle,
@@ -319,6 +336,8 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                                                 setModels([]);
                                                 setSelectedModel('');
                                                 setBalanceInfo(null);
+                                                setApiKey('');
+                                                setHasSavedApiKey(false);
                                                 const defaults: Record<string, string> = {
                                                     openai: 'https://api.openai.com/v1',
                                                     anthropic: 'https://api.anthropic.com',
@@ -355,9 +374,14 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                                             type="password"
                                             value={apiKey}
                                             onChange={(e) => setApiKey(e.target.value)}
-                                            placeholder="sk-..."
+                                            placeholder={hasSavedApiKey ? 'Using saved key (enter to replace)...' : 'sk-...'}
                                             className="w-full bg-slate-950 border border-white/5 rounded-2xl px-6 py-4 outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-mono text-white"
                                         />
+                                        {hasSavedApiKey && !apiKey.trim() && (
+                                            <p className="text-[10px] text-slate-500 italic">
+                                                A key is already saved for this provider. Leave blank to keep it.
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-4">
                                         <label className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -473,8 +497,8 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                                         key={style.id}
                                         onClick={() => setStoryboardStyle(style.id)}
                                         className={`text-left p-3 rounded-xl border transition-all space-y-0.5 ${storyboardStyle === style.id
-                                                ? 'bg-indigo-500/10 border-indigo-500/50 ring-1 ring-indigo-500/30'
-                                                : 'bg-slate-900/40 border-white/5 hover:border-white/10'
+                                            ? 'bg-indigo-500/10 border-indigo-500/50 ring-1 ring-indigo-500/30'
+                                            : 'bg-slate-900/40 border-white/5 hover:border-white/10'
                                             }`}
                                     >
                                         <div className="flex items-center justify-between">
@@ -618,7 +642,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                         </div>
                         <button
                             onClick={handleCheckBalance}
-                            disabled={isBalanceLoading || !apiKey}
+                            disabled={isBalanceLoading || (!apiKey.trim() && !hasSavedApiKey)}
                             className="p-3 hover:bg-white/5 rounded-xl transition-all disabled:opacity-20"
                         >
                             <RefreshCw className={`w-5 h-5 text-slate-400 ${isBalanceLoading ? 'animate-spin' : ''}`} />
@@ -652,7 +676,7 @@ export const Configuration: React.FC<ConfigurationProps> = ({ onSave }) => {
                             <p className="text-xs text-slate-500 mb-2">Click the refresh icon to fetch your account balance</p>
                             <button
                                 onClick={handleCheckBalance}
-                                disabled={!apiKey}
+                                disabled={!apiKey.trim() && !hasSavedApiKey}
                                 className="text-indigo-500 text-xs font-bold hover:underline disabled:opacity-30"
                             >
                                 Check Entitlements

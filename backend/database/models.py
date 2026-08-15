@@ -71,6 +71,12 @@ class StoryboardFrame(Base):
     lens = Column(String)                # 24mm, 50mm anamorphic, telephoto …
     lighting = Column(String)            # Chiaroscuro, natural, three-point …
     scene_characters = Column(Text, default="[]")  # JSON list of character names in frame
+    
+    # Multimodal Video / Animatic Attributes (Phase 4)
+    video_path = Column(String, nullable=True)          # Local MP4 path or cloud video URL
+    video_duration = Column(Float, default=4.0)         # Duration in seconds
+    motion_preset = Column(String, default="dolly_in")  # dolly_in, dolly_out, pan_left, pan_right, handheld, slow_motion
+    video_status = Column(String, default="none")       # none, generating, ready, failed
 
     project = relationship("Project", back_populates="frames")
 
@@ -176,5 +182,88 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+from sqlalchemy import text  # type: ignore
+
 def init_db():
     Base.metadata.create_all(bind=engine)
+    
+    # Lightweight schema migrations for existing SQLite databases
+    migrations = {
+        "scripts": [
+            ("script_format", "VARCHAR DEFAULT 'text'"),
+            ("version", "INTEGER DEFAULT 1"),
+        ],
+        "provider_configs": [
+            ("storyboard_style", "VARCHAR DEFAULT 'oscar_prestige'"),
+            ("base_url", "VARCHAR"),
+            ("model_name", "VARCHAR"),
+            ("api_key", "VARCHAR"),
+            ("type", "VARCHAR"),
+        ],
+        "storyboard_frames": [
+            ("heading", "VARCHAR"),
+            ("moment_summary", "TEXT"),
+            ("shot_type", "VARCHAR"),
+            ("camera_movement", "VARCHAR"),
+            ("lens", "VARCHAR"),
+            ("lighting", "VARCHAR"),
+            ("scene_characters", "TEXT DEFAULT '[]'"),
+            ("video_path", "VARCHAR"),
+            ("video_duration", "FLOAT DEFAULT 4.0"),
+            ("motion_preset", "VARCHAR DEFAULT 'dolly_in'"),
+            ("video_status", "VARCHAR DEFAULT 'none'"),
+        ],
+        "scenes": [
+            ("heading", "VARCHAR"),
+            ("content", "TEXT"),
+            ("characters", "TEXT DEFAULT '[]'"),
+        ],
+        "characters": [
+            ("description", "TEXT"),
+            ("age_range", "VARCHAR"),
+            ("role", "VARCHAR"),
+            ("wardrobe", "TEXT"),
+            ("visual_prompt", "TEXT"),
+            ("voice_id", "VARCHAR"),
+            ("voice_provider", "VARCHAR DEFAULT 'openai'"),
+            ("voice_description", "VARCHAR"),
+            ("voice_notes", "TEXT"),
+            ("first_scene", "INTEGER"),
+            ("scene_count", "INTEGER DEFAULT 0"),
+            ("line_count", "INTEGER DEFAULT 0"),
+            ("is_lead", "BOOLEAN DEFAULT 0"),
+        ],
+        "character_archetypes": [
+            ("narrative_role", "VARCHAR"),
+            ("jungian_archetype", "VARCHAR"),
+            ("production_tier", "VARCHAR"),
+            ("genre_type", "VARCHAR"),
+            ("visual_prompt", "TEXT"),
+            ("voice_id", "VARCHAR"),
+            ("voice_description", "TEXT"),
+            ("visual_style_notes", "TEXT"),
+            ("wardrobe_signature", "TEXT"),
+            ("usage_count", "INTEGER DEFAULT 0"),
+            ("created_at", "DATETIME"),
+        ],
+        "knowledge_entries": [
+            ("genre", "VARCHAR DEFAULT 'all'"),
+            ("tags", "TEXT DEFAULT '[]'"),
+            ("source", "VARCHAR DEFAULT 'Analysis'"),
+            ("confidence", "FLOAT DEFAULT 0.8"),
+            ("usage_count", "INTEGER DEFAULT 0"),
+            ("created_at", "DATETIME"),
+        ],
+    }
+
+    with engine.connect() as conn:
+        for table_name, columns in migrations.items():
+            try:
+                result = conn.execute(text(f"PRAGMA table_info({table_name})"))
+                existing_cols = {row[1] for row in result.fetchall()}
+                for col_name, col_ddl in columns:
+                    if col_name not in existing_cols:
+                        conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_ddl}"))
+                        conn.commit()
+            except Exception:
+                pass

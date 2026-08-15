@@ -1,14 +1,7 @@
-from providers.base_provider import BaseProvider  # type: ignore
+from providers.base_provider import BaseProvider, ImageGenerationError  # type: ignore
 from typing import Optional, List, Dict, Any
 import openai  # type: ignore
 import os
-
-
-class ImageGenerationError(Exception):
-    """Custom exception that carries the attempt log."""
-    def __init__(self, message: str, attempts: list):
-        super().__init__(message)
-        self.attempts = attempts
 
 
 class OpenAIProvider(BaseProvider):

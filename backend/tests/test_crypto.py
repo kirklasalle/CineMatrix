@@ -73,3 +73,9 @@ def test_special_characters():
     key_with_special = "api_key!@#$%^&*()_+-={}|[]"
     encrypted = encrypt_api_key(key_with_special)
     assert decrypt_api_key(encrypted) == key_with_special
+
+
+def test_encrypt_is_idempotent_for_encrypted_values():
+    from crypto_utils import encrypt_api_key
+    encrypted = encrypt_api_key("sk-stable-key")
+    assert encrypt_api_key(encrypted) == encrypted

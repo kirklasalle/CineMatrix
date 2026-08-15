@@ -55,6 +55,9 @@ def encrypt_api_key(plaintext: Optional[str]) -> str:
     """
     if not plaintext:
         return ""
+    if plaintext.startswith("enc:"):
+        # Already encrypted; keep as-is to prevent accidental double encryption.
+        return plaintext
     try:
         cipher = _get_fernet()
         token = cipher.encrypt(plaintext.encode("utf-8")).decode("utf-8")

@@ -5,7 +5,7 @@ file extension, magic bytes, and content signatures.
 """
 from typing import Literal
 
-ScriptFormat = Literal["fdx", "fountain", "docx", "pdf", "text"]
+ScriptFormat = Literal["fdx", "fountain", "docx", "pdf", "text", "cbz", "cbr", "epub"]
 
 
 def detect_format(filename: str, file_bytes: bytes) -> ScriptFormat:
@@ -17,6 +17,12 @@ def detect_format(filename: str, file_bytes: bytes) -> ScriptFormat:
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
 
     # 1. Explicit extension mapping
+    if ext == "cbz":
+        return "cbz"
+    if ext == "cbr":
+        return "cbr"
+    if ext == "epub":
+        return "epub"
     if ext == "fdx":
         return "fdx"
     if ext == "fountain" or ext == "spmd":
@@ -30,7 +36,13 @@ def detect_format(filename: str, file_bytes: bytes) -> ScriptFormat:
     # PDF: %PDF
     if file_bytes[:4] == b"%PDF":
         return "pdf"
-    # DOCX / ZIP (DOCX is a ZIP container)
+    # RAR (CBR): Rar!
+    if file_bytes[:4] == b"Rar!":
+        return "cbr"
+    # EPUB container check
+    if file_bytes[:2] == b"PK" and b"mimetypeapplication/epub+zip" in file_bytes[:100]:
+        return "epub"
+    # DOCX / ZIP
     if file_bytes[:2] == b"PK":
         return "docx"
     # FDX: XML — look for <FinalDraft in first 512 bytes

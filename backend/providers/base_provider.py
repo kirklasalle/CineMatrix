@@ -1,6 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
+
+class ImageGenerationError(Exception):
+    """Custom exception that carries the attempt log across fallback chains."""
+    def __init__(self, message: str, attempts: Optional[List[Dict[str, Any]]] = None):
+        super().__init__(message)
+        self.attempts = attempts or []
+
+
 class BaseProvider(ABC):
     @abstractmethod
     async def generate_text(self, prompt: str, system_prompt: Optional[str] = None) -> str:

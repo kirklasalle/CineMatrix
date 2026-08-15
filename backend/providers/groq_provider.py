@@ -30,8 +30,8 @@ class GroqProvider(BaseProvider):
         try:
             if not self.client.api_key:
                 return {"status": "error", "message": "Groq API Key is missing"}
-            # We can't easily ping, but we can verify the client exists
-            return {"status": "success", "message": "Groq client initialized"}
+            await self.client.models.list()
+            return {"status": "success", "message": "Connected to Groq"}
         except Exception as e:
             return {"status": "error", "message": f"Groq Error: {str(e)}"}
 

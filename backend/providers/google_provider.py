@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 from google import genai  # type: ignore
 from google.genai import types  # type: ignore
-from providers.base_provider import BaseProvider  # type: ignore
+from providers.base_provider import BaseProvider, ImageGenerationError  # type: ignore
 import logging
 import base64
 import os

@@ -25,14 +25,20 @@ class AnthropicProvider(BaseProvider):
         # In a real app, we might fall back to another provider or just inform the user
         raise NotImplementedError("Anthropic does not support native image generation yet.")
 
-    async def verify_connection(self) -> bool:
-        # Anthropic doesn't have a cheap info endpoint, but we can verify client initialization
-        # and maybe do a tiny metadata check if possible. For now, we'll assume valid if not error.
+    async def verify_connection(self) -> Dict[str, Any]:
         try:
-            # We'll just verify the client exists and the API key is set
-            return self.client.api_key is not None
-        except:
-            return False
+            if not self.client.api_key:
+                return {"status": "error", "message": "Anthropic API Key is missing"}
+            await self.client.messages.create(
+                model=self.model_name or "claude-3-5-haiku-latest",
+                max_tokens=1,
+                messages=[{"role": "user", "content": "ping"}]
+            )
+            return {"status": "success", "message": "Connected to Anthropic"}
+        except anthropic.AuthenticationError as e:
+            return {"status": "error", "message": f"Anthropic Authentication Error: Invalid API key"}
+        except Exception as e:
+            return {"status": "error", "message": f"Anthropic Error: {str(e)}"}
 
     async def list_models(self) -> List[Dict[str, Any]]:
         # Anthropic doesn't have a public models list API that's easily accessible via the SDK yet
