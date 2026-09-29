@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Layout, Clapperboard, Settings, Database, Wand2, Plus, Bug, Copy, Users, Film, Trash2, Calendar, FileText, Download, Sparkles, Layers, ArrowRight, BookOpen, Activity, Mic, Power, CheckCircle, RefreshCw } from 'lucide-react'
+import { Layout, Clapperboard, Settings, Database, Wand2, Plus, Bug, Copy, Users, Film, Trash2, Calendar, FileText, Download, Sparkles, Layers, ArrowRight, BookOpen, Activity, Mic, Power, CheckCircle, RefreshCw, Keyboard } from 'lucide-react'
 import { ScriptUploader } from './components/ScriptUploader'
 import { Configuration } from './components/Configuration'
 import { StoryboardGallery } from './components/StoryboardGallery'
@@ -9,6 +9,8 @@ import { TableReadStudio } from './components/TableReadStudio'
 import { GraphicNovelStudio } from './components/GraphicNovelStudio'
 import { ExampleScriptsHub, ExampleScriptMeta } from './components/ExampleScriptsHub'
 import { ShutdownModal } from './components/ShutdownModal'
+import { NleShortcutsModal } from './components/NleShortcutsModal'
+import { useNleKeyboardShortcuts, StudioView } from './hooks/useNleKeyboardShortcuts'
 import { API_BASE } from './utils/api'
 
 interface SavedProject {
@@ -34,6 +36,21 @@ function App() {
     // Shutdown State
     const [showShutdownModal, setShowShutdownModal] = useState(false);
     const [isShutDown, setIsShutDown] = useState(false);
+
+    // NLE Shortcuts Modal State
+    const [showNleShortcutsModal, setShowNleShortcutsModal] = useState(false);
+
+    // Bind NLE Studio Switcher & Playback Hotkeys (1-9, J-K-L, ?, F, Space)
+    useNleKeyboardShortcuts({
+        currentView: view as StudioView,
+        onNavigate: (targetView) => {
+            if (['gallery', 'characters', 'story_doctor', 'table_read', 'graphic_novel'].includes(targetView) && !projectId && projects.length > 0) {
+                setProjectId(projects[0].id);
+            }
+            setView(targetView);
+        },
+        onToggleShortcutsModal: () => setShowNleShortcutsModal(prev => !prev),
+    });
 
     // Fetch active provider config and project list
     useEffect(() => {
@@ -304,11 +321,22 @@ function App() {
                         </button>
                     </nav>
 
+                    {/* Header Action: NLE Shortcuts Reference */}
+                    <button
+                        onClick={() => setShowNleShortcutsModal(true)}
+                        title="Open NLE Keyboard Shortcuts & Studio Hotkeys (?)"
+                        className="flex items-center gap-1.5 text-xs font-bold text-indigo-300 hover:text-white hover:bg-indigo-500/20 px-2.5 py-1.5 rounded-xl border border-indigo-500/20 transition-all shrink-0 ml-1"
+                    >
+                        <Keyboard className="w-4 h-4 text-indigo-400" />
+                        <span className="hidden md:inline">Shortcuts</span>
+                        <kbd className="hidden lg:inline px-1.5 py-0.5 rounded bg-indigo-950/70 border border-indigo-500/30 text-[10px] text-indigo-300 font-mono">?</kbd>
+                    </button>
+
                     {/* Header Action: Graceful Shutdown */}
                     <button
                         onClick={() => setShowShutdownModal(true)}
                         title="Shut down Storyboard AI application & backend server"
-                        className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20 transition-all shrink-0 ml-2"
+                        className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20 transition-all shrink-0 ml-1"
                     >
                         <Power className="w-4 h-4" />
                         <span className="hidden sm:inline">Shutdown</span>
@@ -592,6 +620,12 @@ function App() {
                     setShowShutdownModal(false);
                     setIsShutDown(true);
                 }}
+            />
+
+            {/* NLE Keyboard Shortcuts Reference Modal */}
+            <NleShortcutsModal
+                isOpen={showNleShortcutsModal}
+                onClose={() => setShowNleShortcutsModal(false)}
             />
 
             {/* Floating Debug Button */}

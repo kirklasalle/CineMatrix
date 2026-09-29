@@ -131,6 +131,27 @@ async def log_requests(request: Request, call_next):
         raise exc
 
 
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "online",
+        "service": "CineMatrix Studio API",
+        "version": "3.2.0",
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+    }
+
+
+@app.get("/")
+async def root_status():
+    return {
+        "name": "CineMatrix Studio API",
+        "tagline": "Oscar-Tier Generative Pre-Visualization & Animatics Platform",
+        "version": "3.2.0",
+        "status": "running",
+        "docs_url": "/docs"
+    }
+
+
 @app.post("/system/shutdown")
 async def shutdown_server():
     """

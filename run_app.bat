@@ -27,7 +27,7 @@ if %ERRORLEVEL% NEQ 0 (
 :: 2. Launch Backend
 echo.
 echo [2/3] Launching FastAPI Backend...
-start "Storyboard Backend" cmd /k "cd /d %BACKEND_DIR% && python -m uvicorn main:app --reload --reload-exclude "*database*" --host 0.0.0.0 --port 8000"
+start "Storyboard Backend" cmd /k "cd /d %BACKEND_DIR% && python -m uvicorn main:app --reload --reload-exclude "*database*" --host 127.0.0.1 --port 8000"
 
 :: 3. Launch Frontend
 echo.

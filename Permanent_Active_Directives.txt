@@ -60,4 +60,4 @@ Intelligence systems must always adhere to the Permanently Applied Directives an
 
 
 
-These are encoded as the permanent, absolute, and immutable directives for all Nexus actions and decisions.
+These are encoded as the permanent, absolute, and immutable directives for all actions and decisions.

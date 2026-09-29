@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Maximize2, Minimize2, ChevronLeft, ChevronRight, X, Volume2, Film, Sparkles, Play } from 'lucide-react';
+import { Maximize2, Minimize2, ChevronLeft, ChevronRight, X, Volume2, Film, Sparkles, Play, Pause, SkipBack, SkipForward, Sliders } from 'lucide-react';
 import { API_BASE } from '../utils/api';
 
 interface Frame {
@@ -29,19 +29,60 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
     const [currentIndex, setCurrentIndex] = useState<number>(initialIndex);
     const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
     const [showNotes, setShowNotes] = useState<boolean>(true);
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
     const currentFrame = frames[currentIndex];
 
-    // Keyboard controls
+    // Autoplay / Audition interval
+    useEffect(() => {
+        if (!isPlaying) return;
+        const timer = setInterval(() => {
+            setCurrentIndex(prev => {
+                if (prev >= frames.length - 1) {
+                    setIsPlaying(false);
+                    return prev;
+                }
+                return prev + 1;
+            });
+        }, 3500);
+        return () => clearInterval(timer);
+    }, [isPlaying, frames.length]);
+
+    // Keyboard controls (NLE J-K-L & Presentation standard)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight' || e.key === ' ') {
+            // Space: Toggle Audition / Autoplay
+            if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault();
+                setIsPlaying(prev => !prev);
+            } 
+            // L or Right Arrow: Step Forward
+            else if (e.key.toLowerCase() === 'l' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                setIsPlaying(false);
                 setCurrentIndex(prev => Math.min(frames.length - 1, prev + 1));
-            } else if (e.key === 'ArrowLeft') {
+            } 
+            // J or Left Arrow: Step Backward
+            else if (e.key.toLowerCase() === 'j' || e.key === 'ArrowLeft') {
                 e.preventDefault();
+                setIsPlaying(false);
                 setCurrentIndex(prev => Math.max(0, prev - 1));
-            } else if (e.key === 'Escape') {
+            } 
+            // K: Pause
+            else if (e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setIsPlaying(false);
+            }
+            // Home / End
+            else if (e.key === 'Home') {
+                e.preventDefault();
+                setCurrentIndex(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                setCurrentIndex(frames.length - 1);
+            }
+            // Other controls
+            else if (e.key === 'Escape') {
                 onClose();
             } else if (e.key.toLowerCase() === 'f') {
                 toggleFullscreen();
@@ -83,6 +124,25 @@ export const PresentationMode: React.FC<PresentationModeProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Audition / Autoplay */}
+                    <button
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                            isPlaying 
+                                ? 'bg-emerald-600/30 border-emerald-500/50 text-emerald-300 shadow-md shadow-emerald-950/50 animate-pulse' 
+                                : 'bg-white/10 border-white/15 text-slate-200 hover:text-white hover:bg-white/20'
+                        }`}
+                        title="Audition Slideshow / Continuous Playback (Space / K)"
+                    >
+                        {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        <span>{isPlaying ? 'Pause (K)' : 'Audition (Space)'}</span>
+                    </button>
+
+                    <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-900/80 border border-white/10 text-[11px] text-slate-400 font-mono">
+                        <span className="text-slate-500">J/K/L</span>
+                        <span>Scrub</span>
+                    </div>
+
                     <button
                         onClick={() => setShowNotes(!showNotes)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${showNotes ? 'bg-white/15 border-white/20 text-white' : 'bg-transparent border-white/5 text-slate-400'}`}
