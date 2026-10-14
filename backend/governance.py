@@ -16,7 +16,7 @@ Status: ACTIVE AND BINDING
 """
 import hashlib
 import logging
-import datetime
+from time_utils import utc_now  # type: ignore
 from pathlib import Path
 from typing import Optional
 
@@ -150,7 +150,7 @@ class GovernanceEngine:
         integrity_ok = computed == GOVERNANCE_SHA256
 
         cls._BOOT_VERIFIED = integrity_ok
-        timestamp = datetime.datetime.utcnow().isoformat()
+        timestamp = utc_now().isoformat()
 
         logger.info("=" * 72)
         logger.info("PRISM GOVERNANCE BOOT VERIFICATION")
@@ -183,7 +183,7 @@ class GovernanceEngine:
     def _audit(cls, event_type: str, message: str, context: Optional[dict] = None) -> None:
         """Write a governance audit event to the governance log."""
         entry = {
-            "ts": datetime.datetime.utcnow().isoformat(),
+            "ts": utc_now().isoformat(),
             "event": event_type,
             "msg": message,
         }

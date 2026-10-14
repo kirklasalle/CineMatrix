@@ -25,7 +25,7 @@ Growth Model:
 import json
 import hashlib
 import logging
-import datetime
+from time_utils import utc_now  # type: ignore
 from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger("character_library")
@@ -315,7 +315,7 @@ class CharacterLibrary:
                         visual_style_notes=a["visual_style_notes"],
                         wardrobe_signature=a["wardrobe_signature"],
                         usage_count=0,
-                        created_at=datetime.datetime.utcnow(),
+                        created_at=utc_now(),
                     ))
                 db.commit()
                 logger.info("CHARACTER LIBRARY: Seed archetypes installed.")
@@ -387,7 +387,7 @@ class CharacterLibrary:
                     visual_style_notes=character.get("description", ""),
                     wardrobe_signature=character.get("wardrobe", ""),
                     usage_count=1,
-                    created_at=datetime.datetime.utcnow(),
+                    created_at=utc_now(),
                 ))
                 db.commit()
                 logger.debug(f"CHARACTER LIBRARY: New archetype '{character.get('name')}' added")

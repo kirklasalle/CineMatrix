@@ -18,7 +18,7 @@ import time
 import os
 import sys
 import json
-import datetime
+from time_utils import utc_now  # type: ignore
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -117,7 +117,7 @@ def print_report(results: List[Dict[str, Any]]) -> str:
     lines.append("")
     lines.append("=" * 100)
     lines.append("STORYBOARD AI — FORMAT BENCHMARK REPORT")
-    lines.append(f"Run at: {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    lines.append(f"Run at: {utc_now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
     lines.append(f"Documents tested: {len(results)}")
     lines.append("=" * 100)
 
@@ -209,7 +209,7 @@ def save_report(report: str) -> None:
     """Save the benchmark report to logs/."""
     logs_dir = Path(__file__).parent.parent / "logs"
     logs_dir.mkdir(exist_ok=True)
-    date_str = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    date_str = utc_now().strftime("%Y%m%d_%H%M%S")
     report_path = logs_dir / f"format_benchmark_{date_str}.log"
     report_path.write_text(report, encoding="utf-8")
     print(f"Report saved to: {report_path}")
@@ -231,6 +231,6 @@ if __name__ == "__main__":
     save_report(report)
 
     # Also write JSON results
-    json_out = Path(__file__).parent.parent / "logs" / f"format_benchmark_{datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+    json_out = Path(__file__).parent.parent / "logs" / f"format_benchmark_{utc_now().strftime('%Y%m%d_%H%M%S')}.json"
     json_out.write_text(json.dumps(results, indent=2), encoding="utf-8")
     print(f"JSON results: {json_out}")

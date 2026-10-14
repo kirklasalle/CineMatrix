@@ -20,7 +20,7 @@ Co-Author: Claude (Anthropic)
 Status: ACTIVE AND BINDING — Immutable
 """
 import hashlib
-import datetime
+from time_utils import utc_now  # type: ignore
 import logging
 
 logger = logging.getLogger("governance")
@@ -157,7 +157,7 @@ def log_acceptance(project_id: str, filename: str) -> None:
     Record that a user has accepted the content agreement by submitting a file.
     Logs to the governance audit stream (Law 9 — transparent ledger).
     """
-    ts = datetime.datetime.utcnow().isoformat()
+    ts = utc_now().isoformat()
     logger.info(
         f"CONTENT_AGREEMENT_ACCEPTED | project={project_id[:8]}... | "
         f"file={filename} | ts={ts} | sha256={CONTENT_AGREEMENT_SHA256[:16]}..."

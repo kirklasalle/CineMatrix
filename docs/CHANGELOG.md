@@ -7,6 +7,27 @@ Current status is tracked in [STATUS.md](./STATUS.md). Forward plans live in [RO
 
 ---
 
+## [Unreleased]
+
+Follow-ups found after the v3.3.0 creator-beta release.
+
+### Fixed
+
+- **Shutdown screens pointed at a launcher that does not exist.** The Shutdown dialog and the post-shutdown page told users to run `start_storyboard.bat`; both now name `start_cinematrix.bat`. The dialog title, header tooltip, footer brand, copyright line, and `/system/shutdown` response no longer say "Storyboard AI".
+- **The launcher now exits after the in-app Shutdown** instead of waiting for Ctrl+C with a stopped backend (browser-fallback and handed-off-window paths).
+- **Missing page icon.** `index.html` referenced `/vite.svg`, which was never shipped (404 in every bundle). Added a CineMatrix clapperboard `favicon.svg`; the bundle smoke test now fails if a declared page icon does not resolve.
+- **Replaced deprecated `datetime.utcnow()`** across the backend with `time_utils.utc_now()`. It still returns naive UTC, so stored timestamps and log formats are unchanged. Test-run warnings dropped from 30 to 2 (the remaining two come from Starlette's test client).
+
+### Changed
+
+- **CI:** `actions/checkout`, `actions/setup-python`, and `actions/setup-node` moved to v7 (Node 24 runtime). Frontend builds moved from Node 20 (end-of-life) to Node 24 LTS.
+
+### Tests
+
+- 5 new launcher tests: backend-exit detection, shutdown-aware waiting, the favicon resolving to a shipped file, and restart instructions naming a real `.bat`. Suite total: **136 tests, all passing.**
+
+---
+
 ## [3.3.0] — 2026-10-14 — Integrity & Reliability Release
 
 A full codebase and documentation audit ([AUDIT_2026-10-14.md](./AUDIT_2026-10-14.md)) found that **v3.2.0 could not be installed or started from a clean checkout**, and confirmed an exploitable arbitrary file read. This release fixes both, repairs the CI pipeline, and brings every document back in line with the shipped code. No new features.

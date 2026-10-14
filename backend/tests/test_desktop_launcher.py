@@ -145,3 +145,43 @@ def test_bundled_server_refuses_occupied_port_on_windows(bundled_server):
     port = int(bundled_server.rsplit(":", 1)[1])
     with pytest.raises(OSError):
         desktop_launcher.serve_bundled_frontend(str(ROOT_DIR), host="127.0.0.1", port=port)
+
+
+class _FakeProcess:
+    def __init__(self, returncode):
+        self.returncode = returncode
+
+    def poll(self):
+        return self.returncode
+
+
+def test_owned_backend_exited_tracks_launcher_started_backend(monkeypatch):
+    monkeypatch.setattr(desktop_launcher, "backend_processes", [])
+    assert desktop_launcher.owned_backend_exited() is False
+
+    monkeypatch.setattr(desktop_launcher, "backend_processes", [_FakeProcess(None)])
+    assert desktop_launcher.owned_backend_exited() is False
+
+    monkeypatch.setattr(desktop_launcher, "backend_processes", [_FakeProcess(0)])
+    assert desktop_launcher.owned_backend_exited() is True
+
+
+def test_wait_for_interrupt_returns_when_backend_stops(monkeypatch):
+    monkeypatch.setattr(desktop_launcher, "backend_processes", [_FakeProcess(0)])
+    monkeypatch.setattr(desktop_launcher.time, "sleep", lambda _: pytest.fail("should not keep waiting"))
+    desktop_launcher.wait_for_interrupt()
+
+
+def test_favicon_reference_resolves_to_a_shipped_file():
+    html = (ROOT_DIR / "frontend" / "index.html").read_text(encoding="utf-8")
+    icons = re.findall(r'<link[^>]*rel="icon"[^>]*href="/([^"]+)"', html)
+    assert icons, "index.html must declare a page icon"
+    for icon in icons:
+        assert (ROOT_DIR / "frontend" / "public" / icon).is_file(), f"/{icon} is not in frontend/public"
+
+
+@pytest.mark.parametrize("relative", ["frontend/src/App.tsx", "frontend/src/components/ShutdownModal.tsx"])
+def test_shutdown_restart_instructions_name_the_real_launcher(relative):
+    source = (ROOT_DIR / relative).read_text(encoding="utf-8")
+    for script in re.findall(r"\b([\w-]+\.bat)\b", source):
+        assert (ROOT_DIR / script).is_file(), f"{relative} tells users to run {script}, which does not exist"

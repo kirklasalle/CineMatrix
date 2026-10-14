@@ -4,7 +4,7 @@ All SQLAlchemy ORM models. Single source of truth.
 """
 from sqlalchemy import create_engine, Column, String, Integer, Float, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
-import datetime
+from time_utils import utc_now  # type: ignore
 import os
 
 
@@ -19,7 +19,7 @@ class Project(Base):
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(Text)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     scripts = relationship("Script", back_populates="project")
     frames = relationship("StoryboardFrame", back_populates="project")
@@ -140,7 +140,7 @@ class CharacterArchetype(Base):
     visual_style_notes = Column(Text)     # Cinematography notes for this type
     wardrobe_signature = Column(Text)     # Defining wardrobe elements
     usage_count = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
 
 # ── Configuration Model ───────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ class KnowledgeEntry(Base):
     source = Column(String, default="Analysis")
     confidence = Column(Float, default=0.8)
     usage_count = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
 
 # ── Database Setup ────────────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ from crypto_utils import encrypt_api_key, decrypt_api_key  # type: ignore
 from character_library import CharacterLibrary  # type: ignore
 import json
 import datetime
+from time_utils import utc_now_iso  # type: ignore
 import uvicorn # type: ignore
 import uuid
 import os
@@ -140,7 +141,7 @@ async def health_check():
         "status": "online",
         "service": "CineMatrix Studio API",
         "version": APP_VERSION,
-        "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+        "timestamp": utc_now_iso() + "Z"
     }
 
 
@@ -158,7 +159,7 @@ async def root_status():
 @app.post("/system/shutdown")
 async def shutdown_server():
     """
-    Gracefully shuts down the Storyboard AI server process.
+    Gracefully shuts down the CineMatrix Studio server process.
     """
     logger.info("SYSTEM: Graceful shutdown initiated via API.")
     GovernanceEngine.audit_api_call("/system/shutdown")
@@ -169,7 +170,7 @@ async def shutdown_server():
         os._exit(0)
         
     asyncio.create_task(_delayed_shutdown())
-    return {"status": "success", "message": "Storyboard AI server is shutting down cleanly."}
+    return {"status": "success", "message": "CineMatrix Studio server is shutting down cleanly."}
 
 @app.get("/examples")
 async def get_examples(category: Optional[str] = None):

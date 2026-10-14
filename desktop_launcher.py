@@ -53,6 +53,7 @@ BROWSER_PROFILE_DIR = os.path.join(
 )
 
 processes = []
+backend_processes = []
 servers = []
 
 
@@ -108,6 +109,7 @@ def ensure_backend_running(timeout: float = BACKEND_STARTUP_TIMEOUT):
     ]
     p = subprocess.Popen(cmd, cwd=BACKEND_DIR)
     processes.append(p)
+    backend_processes.append(p)
 
     # Wait for the backend to become healthy; first start imports heavy libraries.
     deadline = time.time() + timeout
@@ -249,12 +251,20 @@ def find_browser_app_executable():
     return None
 
 
-def wait_for_interrupt(reason: str = ""):
+def owned_backend_exited() -> bool:
+    """True once a backend this launcher started has exited, e.g. via the in-app Shutdown button."""
+    return any(p.poll() is not None for p in backend_processes)
+
+
+def wait_for_interrupt(reason: str = "", stop_when=owned_backend_exited):
     if reason:
         log(reason)
     log("CineMatrix Studio is running. Press Ctrl+C in this window to stop it.")
     try:
         while True:
+            if stop_when is not None and stop_when():
+                log("Backend has stopped (in-app Shutdown); closing the launcher.")
+                return
             time.sleep(1)
     except KeyboardInterrupt:
         pass
@@ -326,6 +336,7 @@ def cleanup():
             except Exception:
                 p.kill()
     processes.clear()
+    backend_processes.clear()
 
 
 def run_smoke_test() -> int:
@@ -371,6 +382,15 @@ def run_smoke_test() -> int:
                     expected = "javascript" if asset.endswith(".js") else "css"
                     if a_status != 200 or expected not in ctype:
                         failures.append(f"{asset}: HTTP {a_status}, Content-Type {ctype!r}")
+
+                icons = re.findall(r'<link[^>]*rel="icon"[^>]*href="(/[^"]+)"', html)
+                if mode == "bundled" and not icons:
+                    failures.append("interface HTML declares no page icon")
+                for icon in icons:
+                    try:
+                        http_get(app_url + icon)
+                    except urllib.error.HTTPError as exc:
+                        failures.append(f"page icon {icon}: HTTP {exc.code}")
 
                 route_status, _, route_body = http_get(f"{app_url}/some/client/route")
                 if route_status != 200 or b'id="root"' not in route_body:

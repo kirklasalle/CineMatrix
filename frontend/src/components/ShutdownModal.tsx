@@ -55,7 +55,7 @@ export const ShutdownModal: React.FC<ShutdownModalProps> = ({
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-black text-white">Shut Down Storyboard AI?</h3>
+                        <h3 className="text-xl font-black text-white">Shut Down CineMatrix Studio?</h3>
                         <p className="text-sm text-slate-400 mt-1">
                             This will safely terminate the backend server process and close open database connections.
                         </p>
@@ -74,7 +74,7 @@ export const ShutdownModal: React.FC<ShutdownModalProps> = ({
                             <span>All projects &amp; frames are saved in SQLite</span>
                         </div>
                         <p className="text-[11px] text-slate-500 pl-5.5">
-                            You can safely restart anytime by running <code className="text-indigo-300">start_storyboard.bat</code>.
+                            You can safely restart anytime by running <code className="text-indigo-300">start_cinematrix.bat</code>.
                         </p>
                     </div>
 

@@ -236,7 +236,7 @@ function App() {
                             <span>All your project data &amp; storyboards are safe</span>
                         </div>
                         <p className="text-slate-500 pl-6">
-                            To start the application again, double-click <code className="text-indigo-300">start_storyboard.bat</code> in the project directory.
+                            To start the application again, double-click <code className="text-indigo-300">start_cinematrix.bat</code> in the CineMatrix folder.
                         </p>
                     </div>
 
@@ -335,7 +335,7 @@ function App() {
                     {/* Header Action: Graceful Shutdown */}
                     <button
                         onClick={() => setShowShutdownModal(true)}
-                        title="Shut down Storyboard AI application & backend server"
+                        title="Shut down CineMatrix Studio application & backend server"
                         className="flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20 transition-all shrink-0 ml-1"
                     >
                         <Power className="w-4 h-4" />
@@ -599,14 +599,14 @@ function App() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-600">
                         <div className="flex items-center gap-2">
                             <Clapperboard className="w-4 h-4 text-indigo-500" />
-                            <span className="font-bold text-slate-400">Storyboard AI</span>
+                            <span className="font-bold text-slate-400">CineMatrix Studio</span>
                             <span>&middot; Oscar / Level 3 Presentation Suite</span>
                         </div>
                         <div>
                             Governed by Kirk LaSalle&rsquo;s Permanent Active Directives (The 10 Laws)
                         </div>
                         <div>
-                            &copy; {new Date().getFullYear()} Storyboard AI
+                            &copy; {new Date().getFullYear()} CineMatrix Studio
                         </div>
                     </div>
                 </div>

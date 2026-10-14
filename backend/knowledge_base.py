@@ -24,7 +24,7 @@ Architecture:
 """
 import logging
 import json
-import datetime
+from time_utils import utc_now  # type: ignore
 import hashlib
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
@@ -289,7 +289,7 @@ class CinematicKnowledgeBase:
                         source=entry.get("source", "Seed Wisdom"),
                         confidence=entry.get("confidence", 0.8),
                         usage_count=0,
-                        created_at=datetime.datetime.utcnow(),
+                        created_at=utc_now(),
                     )
                     db.add(ke)
                 db.commit()
@@ -341,7 +341,7 @@ class CinematicKnowledgeBase:
                 source=source,
                 confidence=confidence,
                 usage_count=0,
-                created_at=datetime.datetime.utcnow(),
+                created_at=utc_now(),
             )
             db.add(ke)
             db.commit()
