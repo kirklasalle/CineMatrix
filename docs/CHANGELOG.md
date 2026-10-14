@@ -27,6 +27,7 @@ A full codebase and documentation audit ([AUDIT_2026-10-14.md](./AUDIT_2026-10-1
   - Added `resolve_example_path()` in `backend/examples_service.py`, enforcing real-path containment within `EXAMPLES_BASE_DIR` and rejecting absolute paths, drive letters, and traversal sequences.
   - Both body-driven routes and `read_example_content()` now resolve through it; rejected paths return `400 Bad Request` and are logged as security events.
   - Verified: the previously successful exploit now returns `400 {"detail":"Invalid example script path."}`.
+- **Desktop bundles included development data.** The packaging ignore pattern did not exclude generated media and copied the local `storyboard.db` into `dist_release/`. The builder now excludes databases, logs, caches, test fixtures, environment files, and generated audio/video while retaining clean runtime directories.
 
 ### 🛠️ Fixed — Tooling & Consistency
 

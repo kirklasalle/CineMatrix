@@ -18,6 +18,8 @@ FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 FRONTEND_DIST = os.path.join(FRONTEND_DIR, "dist")
 BACKEND_DIR = os.path.join(ROOT_DIR, "backend")
 DIST_RELEASE_DIR = os.path.join(ROOT_DIR, "dist_release")
+EXCLUDED_BACKEND_DIRS = {"__pycache__", ".pytest_cache", "logs", "tests", "test_scripts"}
+EXCLUDED_BACKEND_SUFFIXES = {".db", ".sqlite", ".sqlite3", ".log", ".pyc"}
 
 
 def read_app_version() -> str:
@@ -28,6 +30,22 @@ def read_app_version() -> str:
     if not match:
         raise RuntimeError("APP_VERSION not found in backend/main.py")
     return match.group(1)
+
+
+def backend_copy_ignore(directory: str, entries: list[str]) -> set[str]:
+    """Exclude development data and user-generated state from release bundles."""
+    relative_dir = os.path.relpath(directory, BACKEND_DIR)
+    relative_parts = set(relative_dir.split(os.sep))
+    ignore = {
+        entry
+        for entry in entries
+        if entry in EXCLUDED_BACKEND_DIRS
+        or os.path.splitext(entry)[1].lower() in EXCLUDED_BACKEND_SUFFIXES
+        or entry == ".env"
+    }
+    if "static" in relative_parts and relative_parts.intersection({"audio", "videos"}):
+        ignore.update(entry for entry in entries if entry != ".gitkeep")
+    return ignore
 
 
 def log(step: str, msg: str):
@@ -86,9 +104,9 @@ def assemble_release_package():
     # 2. Copy Backend Core (excluding pycache and large logs)
     target_backend = os.path.join(DIST_RELEASE_DIR, "backend")
     shutil.copytree(
-        BACKEND_DIR, 
-        target_backend, 
-        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.log", "static/videos/*", ".pytest_cache")
+        BACKEND_DIR,
+        target_backend,
+        ignore=backend_copy_ignore,
     )
 
     # 3. Copy Launchers and Documentation
@@ -124,7 +142,7 @@ def main():
     duration = time.time() - start_time
     print()
     print("=" * 70)
-    print(f"BUILD COMPLETE: CineMatrix Studio v3.2 packaged in {duration:.1f}s!")
+    print(f"BUILD COMPLETE: CineMatrix Studio v{read_app_version()} packaged in {duration:.1f}s!")
     print("=" * 70)
 
 if __name__ == "__main__":

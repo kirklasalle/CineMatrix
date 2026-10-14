@@ -108,3 +108,19 @@ def test_desktop_build_version_matches_app_version():
     assert match is not None and match.group(1) == main.APP_VERSION
     assert "read_app_version()" in source, "build_desktop.py must derive its version from backend/main.py"
     assert not re.search(r'"version":\s*"\d+\.\d+\.\d+"', source), "build_desktop.py must not hardcode a version"
+    assert not re.search(r"CineMatrix Studio v\d+\.\d+", source), "build output must not hardcode a version"
+
+    sys.path.insert(0, str(root_dir))
+    import build_desktop  # type: ignore
+
+    ignored = build_desktop.backend_copy_ignore(
+        str(root_dir / "backend"),
+        ["database", "tests", "storyboard.db", ".env", "main.py"],
+    )
+    assert ignored == {"tests", "storyboard.db", ".env"}
+
+    media_ignored = build_desktop.backend_copy_ignore(
+        str(root_dir / "backend" / "static" / "videos"),
+        [".gitkeep", "generated.mp4"],
+    )
+    assert media_ignored == {"generated.mp4"}
