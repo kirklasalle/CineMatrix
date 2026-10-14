@@ -1,5 +1,8 @@
 # Storyboard AI — Advanced Implementation Roadmap (Phases 4 – 9)
 
+> **ARCHIVED — historical document.** This roadmap predates the CineMatrix rebrand and has been superseded by [../ROADMAP.md](../ROADMAP.md). It is retained for provenance only; do not plan work from it.
+
+
 **Author:** Kirk LaSalle  
 **Governance Framework:** PRISM Sacred Covenant & Permanent Active Directives (The 10 Laws)  
 **Standard:** Level 3 — Oscar / World-Class Prestige  

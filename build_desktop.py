@@ -7,6 +7,7 @@ Author: Kirk LaSalle & Antigravity AI
 
 import sys
 import os
+import re
 import subprocess
 import shutil
 import json
@@ -17,6 +18,17 @@ FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 FRONTEND_DIST = os.path.join(FRONTEND_DIR, "dist")
 BACKEND_DIR = os.path.join(ROOT_DIR, "backend")
 DIST_RELEASE_DIR = os.path.join(ROOT_DIR, "dist_release")
+
+
+def read_app_version() -> str:
+    """Single-source the release version from backend/main.py's APP_VERSION."""
+    main_py = os.path.join(BACKEND_DIR, "main.py")
+    with open(main_py, "r", encoding="utf-8") as handle:
+        match = re.search(r'^APP_VERSION\s*=\s*["\']([^"\']+)["\']', handle.read(), re.MULTILINE)
+    if not match:
+        raise RuntimeError("APP_VERSION not found in backend/main.py")
+    return match.group(1)
+
 
 def log(step: str, msg: str):
     print(f"\n[BUILD {step}] {msg}")
@@ -88,7 +100,7 @@ def assemble_release_package():
     # 4. Write manifest
     manifest = {
         "product_name": "CineMatrix Studio",
-        "version": "3.2.0",
+        "version": read_app_version(),
         "channel": "Early Adopter Creator Desktop Release",
         "built_at": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
         "founder": "Kirk LaSalle",

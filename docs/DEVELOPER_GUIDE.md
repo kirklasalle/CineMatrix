@@ -1,7 +1,34 @@
-# Developer Guide — Storyboard AI
+# Developer Guide — CineMatrix Studio
 
 **Governance:** PRISM Sacred Covenant & Permanent Active Directives (The 10 Laws)  
 **Standard:** Level 3 — Oscar / World-Class Prestige  
+**Applies to:** v3.3.0 · **Last reviewed:** 2026-10-14
+
+> Current project state: [STATUS.md](./STATUS.md) · Full API: [API_REFERENCE.md](./API_REFERENCE.md)
+
+---
+
+## 0. Environment Setup
+
+```bash
+# 1. Create a virtual environment (Python 3.12+; verified on 3.14)
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS / Linux
+
+# 2. Install dependencies
+pip install -r backend/requirements-dev.txt   # runtime + pytest
+# or, runtime only:
+pip install -r backend/requirements.txt
+
+# 3. Verify the backend boots
+cd backend && python -c "import main; print(main.APP_VERSION)"
+
+# 4. Install frontend dependencies
+cd ../frontend && npm ci
+```
+
+> **Important.** `backend/requirements.txt` is fully pinned and must stay complete. `backend/main.py` imports `video_engine` (and therefore `cv2` + `numpy`) at module load time, so an incomplete requirements file makes the API fail to start, not degrade gracefully. `backend/tests/test_security_paths.py` enforces this contract.
 
 ---
 
@@ -34,7 +61,7 @@
 ## 2. Directory Structure
 
 ```
-storyboard/
+cinematrix/
 ├── backend/
 │   ├── database/
 │   │   ├── models.py           # Database models & auto-migration engine
@@ -46,18 +73,22 @@ storyboard/
 │   │   ├── docx_parser.py      # Word document parser
 │   │   ├── comic_parser.py     # .cbz/.cbr parser & CBZ packager
 │   │   └── epub_parser.py      # .epub chapter & text extractor
-│   ├── tests/                  # Pytest unit & integration test suite (97 tests)
+│   ├── providers/              # OpenAI, Anthropic, Google GenAI, Groq, OpenRouter, Local
+│   ├── tests/                  # Pytest unit & integration suite (117 tests)
 │   ├── audio_scoring_engine.py # Pure Python procedural soundtrack & foley generator
-│   ├── character_library.py    # 14,000+ archetype taxonomy & voice profiles
+│   ├── character_library.py    # Archetype taxonomy & voice profiles
 │   ├── concept_art_engine.py   # Turnaround model sheets & look-book PDFs
+│   ├── examples_service.py     # 27-script sample catalog + safe path resolution
 │   ├── export_service.py       # 16:9 PDF decks, ZIP bundles, and CBZ exporter
-│   ├── genre_vault.py          # 18 genre configurations & camera suggestions
+│   ├── genre_vault.py          # Genre configurations & camera suggestions
 │   ├── graphic_novel_engine.py # Multi-panel layout templates & print PDF
 │   ├── story_doctor.py         # Blake Snyder 15-beat sheet & tension arc
 │   ├── style_vault.py          # 16 visual aesthetic styles & prompt prefixes
 │   ├── table_read_orchestrator.py # Dialogue cues & speech cadence timeline
 │   ├── video_engine.py         # OpenCV Ken Burns camera motion animatics
-│   └── main.py                 # Core FastAPI REST routes
+│   ├── requirements.txt        # Pinned runtime dependencies
+│   ├── requirements-dev.txt    # Runtime + test dependencies
+│   └── main.py                 # Core FastAPI REST routes (60 endpoints)
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
@@ -66,14 +97,28 @@ storyboard/
 │   │   │   ├── TableReadStudio.tsx
 │   │   │   ├── StoryDoctorView.tsx
 │   │   │   ├── GraphicNovelStudio.tsx
+│   │   │   ├── ExampleScriptsHub.tsx
 │   │   │   ├── PresentationMode.tsx
+│   │   │   ├── NleShortcutsModal.tsx
+│   │   │   ├── ShutdownModal.tsx
 │   │   │   ├── ScriptUploader.tsx
 │   │   │   └── Configuration.tsx
+│   │   ├── hooks/useNleKeyboardShortcuts.ts  # J-K-L & 1-9 studio switching
 │   │   ├── App.tsx             # Main router & Projects Hub
-│   │   └── utils/api.ts        # API client configuration
+│   │   └── utils/api.ts        # API base URL configuration
+│   ├── .eslintrc.cjs
 │   ├── package.json
 │   └── vite.config.ts
-├── docs/                       # Complete documentation suite
+├── docs/                       # Canonical documentation suite
+│   ├── STATUS.md               # Current project status (start here)
+│   ├── AUDIT_2026-10-14.md     # Full codebase & documentation audit
+│   ├── CHANGELOG.md
+│   ├── ROADMAP.md
+│   ├── API_REFERENCE.md
+│   ├── examples/               # 27 sample scripts
+│   └── archive/                # Historical planning documents
+├── desktop_launcher.py         # Desktop shell & process supervisor
+├── build_desktop.py            # Desktop distribution builder
 ├── start_storyboard.bat        # Windows one-click master launcher
 ├── start_storyboard.ps1        # PowerShell master launcher
 └── run_tests.bat               # Unified test runner
@@ -86,15 +131,21 @@ storyboard/
 ### 3.1 Backend Pytest
 ```bash
 python -m pytest backend/tests/ -v
-# Output: 97 passed in ~2.5s (100% pass rate)
+# Expected: 117 passed in ~15s
 ```
 
-### 3.2 Frontend Build & Lint
+### 3.2 Frontend Lint, Typecheck & Build
 ```bash
 cd frontend
-npm run build
-# Output: Vite production bundle built with 0 errors
+npm run lint        # ESLint — exit 0 (warnings are tracked, not fatal)
+npm run lint:strict # zero-warning gate — currently 84 warnings outstanding
+npm run typecheck   # tsc --noEmit, strict mode
+npm run build       # Vite production bundle
 ```
+
+### 3.3 Release Gate
+No release ships unless all of the following pass from a **clean checkout**:
+`pip install -r backend/requirements-dev.txt` → `pytest backend/tests` → `npm ci` → `npm run lint` → `npm run build`.
 
 ---
 

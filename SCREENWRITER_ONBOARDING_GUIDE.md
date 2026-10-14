@@ -1,8 +1,8 @@
 # CineMatrix Studio v3.2 — Screenwriter & Creator Onboarding Guide
 > **"From Final Draft to Animatics, Table Read & 300 DPI Graphic Novel in 60 Seconds."**  
 > **Founder & Sovereign Architect:** Kirk LaSalle  
-> **Platform Version:** 3.2.0 (Oscar Prestige Edition)  
-> **Repository:** [`d:\Projects\cinematrix`](file:///D:/Projects/cinematrix)
+> **Platform Version:** 3.3.0 (Oscar Prestige Edition)
+> **Repository:** `d:\Projects\cinematrix`
 
 ---
 
@@ -19,7 +19,7 @@ Traditional film pre-production is slow and exorbitantly expensive: hiring human
 CineMatrix runs completely private on your local machine with zero cloud lock-in.
 
 ### 1-Click Desktop Startup
-1. Open the project root folder: [`D:\Projects\cinematrix`](file:///D:/Projects/cinematrix).
+1. Open the project root folder: `D:\Projects\cinematrix`.
 2. Double-click **`start_cinematrix.bat`** (or run `python desktop_launcher.py`).
 3. CineMatrix will automatically:
    - Check local system dependencies (Python 3.10+, Node.js 18+).

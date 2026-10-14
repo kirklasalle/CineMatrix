@@ -7,7 +7,7 @@ First off, thank you for considering contributing to **CineMatrix**! CineMatrix 
 ## 🛠️ Development Setup
 
 ### 1. Prerequisites
-- **Python 3.10+** (Python 3.11/3.12 recommended)
+- **Python 3.12+** (verified on 3.14)
 - **Node.js 18+** & **npm**
 - **Git**
 
@@ -26,9 +26,10 @@ python -m venv .venv
 # On macOS/Linux:
 source .venv/bin/activate
 
-pip install -r requirements.txt
-pip install pytest httpx
+pip install -r requirements-dev.txt
 ```
+
+> `requirements-dev.txt` pulls in the pinned runtime set plus pytest. Use `requirements.txt` alone only for a runtime-only install. Never add an import to the backend without adding its package to `requirements.txt` — `backend/tests/test_security_paths.py` enforces this.
 
 ### 4. Frontend Setup
 ```bash
@@ -47,11 +48,14 @@ npm install
 Before opening a pull request, ensure all tests pass and the frontend compiles:
 
 ```bash
-# Run backend test suite
+# Run backend test suite (expect 117 passed)
 python -m pytest backend/tests/ -v
 
-# Run frontend build
-cd frontend && npm run build
+# Lint, typecheck and build the frontend
+cd frontend
+npm run lint
+npm run typecheck
+npm run build
 ```
 
 ---
@@ -64,7 +68,7 @@ CineMatrix/
 │   ├── database/             # SQLite models and migrations
 │   ├── parsers/              # Final Draft, Fountain, PDF, DOCX, EPUB, CBZ parsers
 │   ├── providers/            # Multi-provider LLM & image generation clients
-│   ├── tests/                # Automated pytest suite (104 tests)
+│   ├── tests/                # Automated pytest suite (117 tests)
 │   ├── audio_scoring_engine.py   # 44.1kHz procedural music & foley synthesizer
 │   ├── concept_art_engine.py     # 4-angle turnarounds & 6-expression model sheets
 │   ├── graphic_novel_engine.py   # Dynamic panel layouts & 300 DPI PDF publisher

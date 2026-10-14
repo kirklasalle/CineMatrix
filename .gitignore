@@ -50,6 +50,7 @@ logs/*.log.*
 .pytest_cache/
 .coverage
 htmlcov/
+backend/tests/logs/
 
 # Temporary files
 *.tmp

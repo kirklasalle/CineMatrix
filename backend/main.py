@@ -38,7 +38,7 @@ from story_doctor import StoryDoctor, BLAKE_SNYDER_BEATS  # type: ignore
 from table_read_orchestrator import TableReadOrchestrator  # type: ignore
 from graphic_novel_engine import GraphicNovelEngine, PANEL_LAYOUT_PRESETS  # type: ignore
 from audio_scoring_engine import AudioScoringEngine, SCORE_PRESETS, FOLEY_PRESETS  # type: ignore
-from examples_service import list_examples, get_example_by_id, read_example_content, EXAMPLES_BASE_DIR  # type: ignore
+from examples_service import list_examples, get_example_by_id, read_example_content, resolve_example_path, EXAMPLES_BASE_DIR  # type: ignore
 from parsers.comic_parser import parse_cbz  # type: ignore
 from parsers.epub_parser import parse_epub  # type: ignore
 import asyncio
@@ -47,6 +47,9 @@ from fastapi.staticfiles import StaticFiles  # type: ignore
 # ── Logging: verbose trace to /logs ──────────────────────────────────────────
 configure_logging("storyboard")
 logger = logging.getLogger("storyboard-api")
+
+# Single source of truth for the API version reported by /health, / and OpenAPI.
+APP_VERSION = "3.3.0"
 
 # ── Governance: boot verification of Prime Directive + 10 Laws ───────────────
 GovernanceEngine.boot_verify()
@@ -61,13 +64,13 @@ knowledge_base = CinematicKnowledgeBase(SessionLocal)
 character_library = CharacterLibrary(SessionLocal)
 
 app = FastAPI(
-    title="Storyboard AI API",
+    title="CineMatrix Studio API",
     description=(
-        "Storyboard AI — governed by the PRISM Agentic Prime Directive, "
+        "CineMatrix Studio — governed by the PRISM Agentic Prime Directive, "
         "the Sacred Covenant, and the Permanent Active Directives (The 10 Laws). "
         "Author: Kirk LaSalle."
     ),
-    version="2.0.0",
+    version=APP_VERSION,
 )
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
@@ -136,7 +139,7 @@ async def health_check():
     return {
         "status": "online",
         "service": "CineMatrix Studio API",
-        "version": "3.2.0",
+        "version": APP_VERSION,
         "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
     }
 
@@ -146,7 +149,7 @@ async def root_status():
     return {
         "name": "CineMatrix Studio API",
         "tagline": "Oscar-Tier Generative Pre-Visualization & Animatics Platform",
-        "version": "3.2.0",
+        "version": APP_VERSION,
         "status": "running",
         "docs_url": "/docs"
     }
@@ -181,6 +184,9 @@ async def get_example_preview(category: str, filename: str):
         return read_example_content(category, filename)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"Example script '{category}/{filename}' not found.")
+    except ValueError as e:
+        logger.warning(f"SECURITY: rejected example path {category}/{filename}: {e}")
+        raise HTTPException(status_code=400, detail="Invalid example script path.")
     except Exception as e:
         logger.error(f"Error reading example {category}/{filename}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1587,7 +1593,11 @@ async def load_example_into_project(project_id: str, body: dict):
     if not filename:
         raise HTTPException(status_code=400, detail="filename is required")
 
-    file_path = os.path.join(EXAMPLES_BASE_DIR, category, filename)
+    try:
+        file_path = resolve_example_path(category, filename)
+    except ValueError as e:
+        logger.warning(f"SECURITY: rejected example path {category}/{filename}: {e}")
+        raise HTTPException(status_code=400, detail="Invalid example script path.")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail=f"Example file not found: {category}/{filename}")
 

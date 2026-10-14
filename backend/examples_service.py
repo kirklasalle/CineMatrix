@@ -420,12 +420,34 @@ def get_example_by_id(example_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def resolve_example_path(category: str, filename: str) -> str:
+    """
+    Safely resolve a sample-script path inside EXAMPLES_BASE_DIR.
+
+    Rejects absolute paths, drive letters, and any traversal sequence that would
+    escape the examples directory. Returns the validated absolute path.
+    """
+    for part in (category, filename):
+        if not isinstance(part, str) or not part.strip():
+            raise ValueError("Example category and filename are required.")
+        if os.path.isabs(part) or part.startswith(("/", "\\")) or ":" in part:
+            raise ValueError(f"Invalid example path component: {part!r}")
+
+    base = os.path.realpath(EXAMPLES_BASE_DIR)
+    candidate = os.path.realpath(os.path.join(base, category, filename))
+
+    if candidate != base and not candidate.startswith(base + os.sep):
+        raise ValueError(f"Example path escapes the examples directory: {category}/{filename}")
+
+    return candidate
+
+
 def read_example_content(category: str, filename: str) -> Dict[str, Any]:
     """
     Read content of an example script file.
     Returns metadata and raw text / preview string.
     """
-    file_path = os.path.join(EXAMPLES_BASE_DIR, category, filename)
+    file_path = resolve_example_path(category, filename)
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Example file not found: {category}/{filename}")
 

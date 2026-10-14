@@ -1,5 +1,8 @@
 # Storyboard AI — Complete Master Studio Guide & User Manual
 
+> **ARCHIVED — historical document.** This guide predates the CineMatrix rebrand and has been superseded by [../USER_GUIDE.md](../USER_GUIDE.md). It is retained for provenance only and contains stale product names, workspace counts, and feature claims.
+
+
 **Executive Author:** Kirk LaSalle  
 **Governance Framework:** PRISM Sacred Covenant & Permanent Active Directives (The 10 Laws)  
 **Standard:** Level 3 — Oscar / World-Class Prestige  

@@ -14,19 +14,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-          pip install pytest httpx
+          pip install -r backend/requirements-dev.txt
 
-      - name: Run Pytest Suite (104 Tests)
+      - name: Run Pytest Suite
         run: |
           python -m pytest backend/tests/ -v
 
@@ -47,6 +46,10 @@ jobs:
       - name: Install Frontend Dependencies
         working-directory: ./frontend
         run: npm ci
+
+      - name: Lint Frontend
+        working-directory: ./frontend
+        run: npm run lint
 
       - name: Build Frontend Bundle
         working-directory: ./frontend

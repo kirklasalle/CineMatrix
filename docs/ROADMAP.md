@@ -1,14 +1,19 @@
-# Storyboard AI — Master Technical Roadmap & Horizons
+# CineMatrix Studio — Master Technical Roadmap & Horizons
 
 **Author:** Kirk LaSalle  
 **Governance:** PRISM Sacred Covenant & Permanent Active Directives (The 10 Laws)  
 **Quality Benchmark:** Level 3 / Level 4 — Oscar & Studio Prestige Standard  
+**Current version:** 3.3.0 · **Last reviewed:** 2026-10-14
+
+> Current project state is tracked in [STATUS.md](./STATUS.md). Shipped history is in [CHANGELOG.md](./CHANGELOG.md). The evidence behind Phases 11–14 is in [AUDIT_2026-10-14.md](./AUDIT_2026-10-14.md).
 
 ---
 
 ## Executive Summary
 
-Storyboard AI is an enterprise-grade, multimodal AI creative suite for screenwriters, directors, cinematographers, showrunners, and graphic novelists. It turns raw written narrative into production-ready visual storyboards, animatic reels, beat sheet coverage analysis, character look-books, table-read audio performances, and graphic novel editions.
+CineMatrix Studio is an enterprise-grade, multimodal AI creative suite for screenwriters, directors, cinematographers, showrunners, and graphic novelists. It turns raw written narrative into production-ready visual storyboards, animatic reels, beat sheet coverage analysis, character look-books, table-read audio performances, and graphic novel editions.
+
+Phases 1–10 delivered the feature surface. **Phases 11–14 exist to make that surface production-grade**, and take priority over the exploratory horizons in Phases 15–19. The October 2026 audit established that feature breadth had outrun operational rigour: the product shipped a complete creative toolchain that could not be installed from a clean checkout. The roadmap below corrects that ordering.
 
 ---
 
@@ -76,41 +81,90 @@ Storyboard AI is an enterprise-grade, multimodal AI creative suite for screenwri
   - **6 Flagship Engine Showcases** (Story Doctor 15-Beats, Table Read Voice Casting, Camera Motion, Graphic Novel Studio, Audio Scoring/Foley, Character Look-Book).
   - **9 Genre & Visual Style Masterpieces** (Cyberpunk Neo-Noir, Historical Prestige, Expressionist Horror, Kinetic Action, Wes Anderson Symmetry, Wong Kar-wai Impressionism, Dogme Verité, Anime Ghibli Fantasy, Spaghetti Western).
   - **3 Duration Spectrum Tiers** (1-Min Micro Pitch, 5-Min Short Film, 10-Min TV Pilot Teaser).
-- Master interactive catalog [`docs/examples/README.md`](file:///d:/Projects/storyboard/docs/examples/README.md) with 100% test automation verification.
+- Master interactive catalog [`docs/examples/README.md`](./examples/README.md) with 100% test automation verification.
 
 ---
 
-## 🔮 Future Evolutionary Horizons (Phases 11 through 15)
+## 🛠️ Remediation Phases (11 through 14) — **Current Priority**
+
+Derived from the [October 2026 audit](./AUDIT_2026-10-14.md). These phases take precedence over the exploratory horizons below. Each closes a specific, evidenced finding.
 
 ```
-[Phase 11: Real-Time Collaboration] ──► [Phase 12: Neural Voice Cloning]
+[Phase 0: Release Blockers ✅] ──► [Phase 11: Security Hardening]
+                                              │
+        [Phase 14: Packaging] ◄── [Phase 13: Frontend Quality] ◄── [Phase 12: Reliability]
+```
+
+### ✅ Phase 0: Release Blockers — **COMPLETE (v3.3.0)**
+- Completed and pinned `backend/requirements.txt`; the app can now install and boot from a clean checkout.
+- Replaced the legacy `google-generativeai` SDK with `google-genai`, which the provider actually imports.
+- Closed a confirmed arbitrary file read in the sample-script loading endpoints.
+- Restored the non-functional ESLint configuration and repaired the GitHub Actions CI pipeline.
+- Single-sourced the API version across OpenAPI, `/health`, `/`, and `package.json`.
+- Added 13 regression tests (suite: 104 → 117).
+
+### 🔐 Phase 11: Security Hardening — *target v3.4.0*
+- **Fail-closed encryption**: refuse startup without `STORYBOARD_SECRET_KEY` outside development, replace the fixed salt with a per-install random salt, and migrate already-persisted provider keys. Today, encryption failure silently falls back to plaintext storage.
+- **Upload hardening**: extension and MIME allow-lists, pre-parse request size limits, archive entry-count and decompression-ratio caps, and zip-slip path validation for `.cbz` / `.cbr` / `.epub` ingestion.
+- **Sanitised error envelope**: client-safe messages with a correlation ID; full exception detail to logs only, replacing the current `{"detail": str(exc)}` global handler.
+- **Shutdown authorisation**: require a local token or explicit opt-in flag for `POST /system/shutdown`.
+- **Negative-path test suite**: malformed archives, oversized uploads, provider failures, and rejected traversal payloads.
+
+### ⚙️ Phase 12: Reliability & Performance — *target v3.5.0*
+- **Move blocking work off the event loop**: PDF, OpenCV video, and WAV synthesis currently run synchronously inside `async def` handlers, stalling all concurrent requests.
+- **Resumable batch generation**: job IDs, progress polling, and partial-state recovery for bulk image and animatic renders that today run unbounded inside a single HTTP request.
+- **Query efficiency**: eliminate the N+1 pattern on `GET /projects`.
+- **Transaction integrity**: consistent `rollback()` on every failure path.
+- **Integration coverage**: endpoint-level tests for `main.py`, `storyboard_engine.py`, and the provider abstraction — currently the largest untested surfaces.
+
+### 🎨 Phase 13: Frontend Quality — *target v3.6.0*
+- **Introduce a test harness**: Vitest + Testing Library. The frontend has no automated tests at all today.
+- **Reach zero lint warnings** and promote `lint:strict` to the CI gate (84 warnings outstanding).
+- **Extract a shared typed API client**, replacing duplicated raw `fetch` logic across ten components.
+- **Decompose oversized components**: `StoryboardGallery.tsx` (1,065 LOC), `Configuration.tsx` (789 LOC), and `App.tsx` (656 LOC) into hooks plus presentational units.
+- **Surface error states in every view**, replacing silent `console.error`-only failure paths that leave stale or empty screens.
+- **Accessibility pass**: `aria-label` on icon-only controls, modal focus trapping, and scoping global numeric shortcuts.
+
+### 📦 Phase 14: Packaging & Portability — *target v4.0.0*
+- **Cross-platform launcher**: replace hardcoded Windows Edge/Chrome paths in `desktop_launcher.py` with platform-aware discovery.
+- **Remove or wire in orphaned modules**: `memory_service.py`, `feedback_engine.py`, `prompt_optimizer.py`.
+- **Reproducible signed builds**: dependency lock file and signed release artefacts for the desktop distribution.
+- **GPU scheduling**: automatic offload coordination so local Whisper/TTS and diffusion cannot starve a single-GPU workstation.
+- **Linux/macOS verification** of the PDF font-embedding path.
+
+---
+
+## 🔮 Future Evolutionary Horizons (Phases 15 through 19)
+
+```
+[Phase 15: Real-Time Collaboration] ──► [Phase 16: Neural Voice Cloning]
                 │                                    │
-[Phase 13: 3D Spatial OpenUSD] ◄───── [Phase 14: Mobile Director PWA]
+[Phase 17: 3D Spatial OpenUSD] ◄───── [Phase 18: Mobile Director PWA]
                 │
-[Phase 15: Enterprise Cloud Cluster & NLE Export]
+[Phase 19: Enterprise Cloud Cluster & NLE Export]
 ```
 
-### 🚀 Phase 11: Real-Time Multi-User Writer's Room Collaboration
+### 🚀 Phase 15: Real-Time Multi-User Writer's Room Collaboration
 - **WebSockets / CRDT Synchronization**: Simultaneous multi-user script editing, scene reordering, and storyboard prompt tuning.
 - **Role-Based Permissions**: Writer, Director, DP, Producer, and Client review access tiers.
 - **Inline Annotation Threads**: Frame-by-frame director feedback, timestamped voice notes, and change revision tracking.
 
-### 🎙️ Phase 12: Neural Voice Cloning & Expressive Audio Stems
+### 🎙️ Phase 16: Neural Voice Cloning & Expressive Audio Stems
 - **Zero-Shot Voice Cloning**: Ability for voice actors and directors to upload 10-second reference samples to create custom character voices.
 - **Dynamic Emotional Inflection**: LLM-driven vocal modulation based on scene intensity (whispering, shouting, trembling, breathless).
 - **Multi-Track Audio Stems (DAW Export)**: Export separate dialogue stems, background music score tracks, and foley SFX channels (`.wav` stems or OMF/AAF formats).
 
-### 🌐 Phase 13: 3D Spatial Scene Reconstruction & OpenUSD/Blender Pipeline
+### 🌐 Phase 17: 3D Spatial Scene Reconstruction & OpenUSD/Blender Pipeline
 - **2D-to-3D Spatial Depth Extraction**: Generating depth maps and 3D Gaussian Splats from rendered 2D storyboard frames.
 - **Universal Scene Description (OpenUSD)**: Export 3D camera frustums, stage geometry, and character placement into Blender, Unreal Engine 5, and Maya.
 - **Virtual Camera Path Keyframing**: True 3D orbital camera sweeps, crane maneuvers, and lens focal adjustments.
 
-### 📱 Phase 14: Mobile & iPad Director Viewfinder App
+### 📱 Phase 18: Mobile & iPad Director Viewfinder App
 - **Progressive Web App (PWA) & Offline Sync**: On-set tablet mode with offline caching of shot lists, frames, and audio reads.
 - **AR Camera Framing Slate**: Augmented reality framing assistant to preview generated storyboard camera angles on physical filming locations.
 - **Live Shot Logging**: Mark scenes as *Shot*, *Next Up*, or *Omitted* during physical production with instant cloud sync.
 
-### ⚡ Phase 15: Enterprise Cloud Cluster & Non-Linear Editor (NLE) Bridge
+### ⚡ Phase 19: Enterprise Cloud Cluster & Non-Linear Editor (NLE) Bridge
 - **Distributed GPU Cloud Rendering**: Asynchronous distributed batch rendering of thousands of storyboard frames in parallel.
 - **Native NLE Timeline Export**: Export directly to **Apple Final Cut Pro XML**, **Adobe Premiere Pro XML**, and **DaVinci Resolve Timeline (`.edl`/`.xml`)** with video animatics and synchronized audio pre-assembled on the timeline.
 - **Single Sign-On (SSO) & Studio Security**: Enterprise SAML/Okta integration, SOC2-compliant encryption, and automated NDA content watermarking.
@@ -120,5 +174,6 @@ Storyboard AI is an enterprise-grade, multimodal AI creative suite for screenwri
 ## Technical Governance & Standards
 
 - **Architectural Tenet**: Clean, modular micro-engines with decoupled providers.
-- **Code Quality**: 100% unit test coverage across all parsing, scoring, exporting, and analysis services.
+- **Code Quality**: 117 automated backend tests covering parsing, scoring, exporting, analysis, and security paths. Full statement coverage is *not* yet achieved — `main.py`, `storyboard_engine.py`, the provider layer, and the entire frontend remain untested, and are addressed in Phases 12 and 13.
+- **Release Gate**: no release ships unless it installs and boots from a clean checkout, the full suite is green, and CI passes on `main`.
 - **Directives**: Governed by the **PRISM Sacred Covenant** and the **10 Permanent Active Directives**.

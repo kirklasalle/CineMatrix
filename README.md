@@ -8,14 +8,15 @@
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg?style=for-the-badge&logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Bundler-Vite%205-646CFF.svg?style=for-the-badge&logo=vite)](https://vitejs.dev)
 [![OpenCV](https://img.shields.io/badge/Video%20Engine-OpenCV%2024%20FPS-5C3EE8.svg?style=for-the-badge&logo=opencv)](https://opencv.org)
-[![Tests](https://img.shields.io/badge/Unit%20Tests-104%20Passed-brightgreen.svg?style=for-the-badge&logo=pytest)](run_tests.bat)
+[![Tests](https://img.shields.io/badge/Unit%20Tests-117%20Passed-brightgreen.svg?style=for-the-badge&logo=pytest)](run_tests.bat)
+[![Status](https://img.shields.io/badge/Status-v3.3.0%20Creator%20Beta-blue.svg?style=for-the-badge)](docs/STATUS.md)
 
 <p align="center">
   <b>An open-source desktop studio for screenwriters, directors, and artists.</b><br/>
   <i>Convert standard screenplays into visual storyboards, 24 FPS animatics, structural beat sheets, and multi-voice table reads.</i>
 </p>
 
-[Quick Start](#-quick-start) • [Studio Modules](#-the-8-studio-modules) • [System Architecture](#-system-architecture) • [Sample Scripts](#-the-27-sample-script-library) • [Styles & Genres](#-styles--genre-presets) • [Testing](#-testing--verification)
+[Quick Start](#-quick-start) • [Studio Modules](#-the-8-studio-modules) • [System Architecture](#-system-architecture) • [Sample Scripts](#-the-27-sample-script-library) • [Styles & Genres](#-styles--genre-presets) • [Testing](#-testing--verification) • [Status](docs/STATUS.md)
 
 </div>
 
@@ -60,6 +61,8 @@ CineMatrix is built with a FastAPI Python backend and a React/TypeScript fronten
 ![CineMatrix 8 Studio Modules](docs/images/storyboard_engines_suite.jpg)
 
 </div>
+
+> These are the eight **capability modules**. In the running app they are reached through **nine navigable destinations** — six creative studios plus the Projects Hub, Example Scripts Hub, and Provider Configuration — switchable with the `1`–`9` NLE keyboard shortcuts (see [docs/USER_GUIDE.md](docs/USER_GUIDE.md) §2). Audio Scoring and the Master Export Suite are surfaced inside the Storyboard Gallery rather than as separate destinations.
 
 ### 1. Storyboard Gallery
 - **Auto Image Generation**: Visual frames are generated and displayed during script analysis.
@@ -136,7 +139,7 @@ CineMatrix includes **27 sample screenplays** in [`docs/examples/`](docs/example
 ## 🚀 Quick Start
 
 ### Requirements
-- **Python 3.10+**
+- **Python 3.12+** (verified on 3.14)
 - **Node.js 18+** & **npm**
 - **Git**
 
@@ -163,6 +166,8 @@ npm install
 npm run dev
 ```
 
+> ⚠️ **Local-first by design.** CineMatrix ships with no authentication and must only be reached over the loopback interface. See [SECURITY.md](SECURITY.md) before changing the bind address.
+
 ---
 
 ## 🧪 Testing & Verification
@@ -174,12 +179,32 @@ run_tests.bat
 
 Or run directly:
 ```bash
-# Run backend test suite (104 tests)
+# Install runtime + test dependencies
+python -m pip install -r backend/requirements-dev.txt
+
+# Run backend test suite (117 tests)
 python -m pytest backend/tests/ -v
 
-# Validate frontend production build
-cd frontend && npm run build
+# Validate the frontend
+cd frontend
+npm run lint        # ESLint
+npm run typecheck   # tsc --noEmit (strict)
+npm run build       # Vite production bundle
 ```
+
+---
+
+## 📊 Project Status & Documentation
+
+| Document | Purpose |
+|---|---|
+| [docs/STATUS.md](docs/STATUS.md) | Current health, what works today, known limitations |
+| [docs/AUDIT_2026-10-14.md](docs/AUDIT_2026-10-14.md) | Full codebase & documentation audit with evidence |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Remediation phases and the forward product plan |
+| [docs/CHANGELOG.md](docs/CHANGELOG.md) | Release history |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | All 60 REST endpoints |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | End-user walkthrough |
+| [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) | Architecture and contributor setup |
 
 ---
 

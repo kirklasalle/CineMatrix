@@ -1,11 +1,75 @@
-# Changelog — Storyboard AI
+# Changelog — CineMatrix Studio
 
-All notable changes to **Storyboard AI** are documented in this file.
+All notable changes to **CineMatrix Studio** (formerly *Storyboard AI*) are documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and is governed by **The PRISM Sacred Covenant** and **Permanent Active Directives (The 10 Laws)** by Kirk LaSalle.
+
+Current status is tracked in [STATUS.md](./STATUS.md). Forward plans live in [ROADMAP.md](./ROADMAP.md).
+
+---
+
+## [3.3.0] — 2026-10-14 — Integrity & Reliability Release
+
+A full codebase and documentation audit ([AUDIT_2026-10-14.md](./AUDIT_2026-10-14.md)) found that **v3.2.0 could not be installed or started from a clean checkout**, and confirmed an exploitable arbitrary file read. This release fixes both, repairs the CI pipeline, and brings every document back in line with the shipped code. No new features.
+
+### 🔴 Fixed — Release Blockers
+
+- **Application could not start from a clean install.** `backend/requirements.txt` omitted packages that `backend/main.py` imports at module load time, so `pip install -r backend/requirements.txt` produced an API that crashed on import:
+  - Added `opencv-python-headless` and `numpy` — imported by `backend/video_engine.py`, which `main.py` imports directly. Without them: `ModuleNotFoundError: No module named 'cv2'`.
+  - Added `PyMuPDF` and `pypdf` — used by the PDF ingestion fallback chain in `main.py` and `examples_service.py`. The error message at `main.py:1515` told users to install PyMuPDF, a package the project never declared.
+  - **Replaced `google-generativeai` with `google-genai`.** `providers/google_provider.py` uses the new Google GenAI SDK (`from google import genai`); the legacy package does not provide it, producing `ImportError: cannot import name 'genai' from 'google'` and taking down the entire API.
+- **All runtime dependencies are now version-pinned** against a verified-working set (Python 3.14), making installs reproducible.
+- **Added `backend/requirements-dev.txt`** so the test suite has a declared, installable dependency set.
+- **Repaired the GitHub Actions CI pipeline**, which installed the incomplete requirements file and therefore could not have been passing on `main`. It now installs `requirements-dev.txt`, runs on Python 3.12, and gates on frontend lint.
+
+### 🟠 Fixed — Security
+
+- **Arbitrary file read via sample-script path traversal.** `POST /projects/{id}/load-example` and `POST /projects/create-with-example` joined attacker-controlled `category` and `filename` values directly onto the examples directory with no containment check. A request with `{"category": "../..", "filename": "README.md"}` returned `200 OK` and ingested the out-of-tree file as project content.
+  - Added `resolve_example_path()` in `backend/examples_service.py`, enforcing real-path containment within `EXAMPLES_BASE_DIR` and rejecting absolute paths, drive letters, and traversal sequences.
+  - Both body-driven routes and `read_example_content()` now resolve through it; rejected paths return `400 Bad Request` and are logged as security events.
+  - Verified: the previously successful exploit now returns `400 {"detail":"Invalid example script path."}`.
+
+### 🛠️ Fixed — Tooling & Consistency
+
+- **Restored frontend lint.** `package.json` declared a `lint` script but no ESLint configuration existed anywhere in `frontend/`, so `npm run lint` failed with *"ESLint couldn't find a configuration file"*. Added `frontend/.eslintrc.cjs` (TypeScript + React Hooks + React Refresh) and configured `no-constant-condition` to permit the SSE read loop.
+- **Added `typecheck` and `lint:strict` npm scripts.** `lint` now reports warnings without failing the build; `lint:strict` retains the zero-warning gate as the Phase 13 target.
+- **Single-sourced the API version.** `FastAPI(version=...)` advertised `2.0.0` while `/health` and `/` reported `3.2.0`. All three now derive from `APP_VERSION` in `backend/main.py`, and the OpenAPI title is corrected from "Storyboard AI API" to "CineMatrix Studio API".
+- Aligned `frontend/package.json` to `3.3.0`.
+
+### ✅ Added — Tests
+
+- New `backend/tests/test_security_paths.py` (13 tests) covering:
+  - path-traversal rejection across resolver, `load-example`, and `create-with-example`;
+  - absolute-path and drive-letter rejection;
+  - the dependency contract (required packages declared, legacy Google SDK absent);
+  - version consistency across OpenAPI, `/health`, `/`, and the desktop build manifest.
+- Suite total: **104 → 117 tests, all passing.**
+
+### 📚 Documentation
+
+- **Added [`docs/STATUS.md`](./STATUS.md)** — the single source of truth for current project state, health dashboard, known limitations, release-readiness gates, and next actions.
+- **Added [`docs/AUDIT_2026-10-14.md`](./AUDIT_2026-10-14.md)** — full audit findings with file:line evidence, verified metrics, revised scoring, and the phased remediation plan.
+- **Rewrote [`docs/ROADMAP.md`](./ROADMAP.md)** — now records actual delivered state alongside remediation Phases 11–14, replacing the aspirational-only plan.
+- **Rewrote [`docs/API_REFERENCE.md`](./API_REFERENCE.md)** — previously documented 31 of 60 endpoints and listed `POST /projects/upload`, which does not exist. Now covers **all 60 routes** with correct paths.
+- **Rebranded remaining "Storyboard AI" references** to CineMatrix Studio across the changelog, roadmap, PRD, API reference, user guide, developer guide, and the examples catalog.
+- **De-duplicated documentation.** `PRD.md`, `USER_GUIDE.md`, and `DEVELOPER_GUIDE.md` existed as byte-identical copies in both the repository root and `docs/`. `docs/` is now canonical; the root copies are pointer stubs.
+- **Corrected false claims** in the PRD, README, and guides: test counts, studio/workspace counts and their keyboard-shortcut order, the `14,000+ archetype combinations` figure, and the broken `d:/Projects/storyboard/...` cross-reference.
+- **Rewrote [`SECURITY.md`](../SECURITY.md)** with the explicit local-first deployment model, the loopback-only warning, and the `STORYBOARD_SECRET_KEY` guidance.
+- **Archived** five superseded documents into [`docs/archive/`](./archive/) with an index explaining what supersedes each.
+- **Single-sourced the desktop release version.** `build_desktop.py` no longer hardcodes `3.2.0`; it reads `APP_VERSION` from `backend/main.py`, and a test prevents the hardcode from returning.
+
+### 📦 Previously Shipped, Now Documented
+
+These changes landed after the 3.2.0 entry was written and had never been recorded in the changelog:
+
+- **Desktop launcher** (`desktop_launcher.py`, `build_desktop.py`, `dist_release/`) — packaged one-click startup with backend health probing and native window shell.
+- **NLE keyboard navigation** — J-K-L scrubbing, 1–9 studio switcher, and Spacebar audition via `frontend/src/hooks/useNleKeyboardShortcuts.ts`, with an in-app reference modal (`NleShortcutsModal.tsx`).
+- **Screenwriter Onboarding Guide** (`SCREENWRITER_ONBOARDING_GUIDE.md`).
+- **GitHub community suite** — CI workflows, issue forms, pull request template, contributing guide, code of conduct, security policy, citation metadata, and licence.
 
 ---
 
 ## [3.2.0] — 2026-08-14 — World-Class Sample Scripts, Auto-Imaging & Graceful Teardown
+
 
 ### 🌟 Major Additions
 - **27 World-Class Sample Screenplay Library (`docs/examples/`)**:
