@@ -54,3 +54,42 @@ jobs:
       - name: Build Frontend Bundle
         working-directory: ./frontend
         run: npm run build
+
+  desktop-bundle-smoke:
+    name: Desktop Bundle Smoke Test (Windows)
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Desktop Release Bundle
+        run: python build_desktop.py
+
+      - name: Launch Bundle From Clean Directory (first-run path)
+        shell: cmd
+        run: |
+          xcopy /E /I /Q dist_release "%RUNNER_TEMP%\cinematrix-bundle" || exit /b 1
+          cd /d "%RUNNER_TEMP%\cinematrix-bundle"
+          if exist frontend echo [ERROR] bundle must not contain frontend source && exit /b 1
+          call start_cinematrix.bat --smoke-test < NUL
+          if errorlevel 1 exit /b 1

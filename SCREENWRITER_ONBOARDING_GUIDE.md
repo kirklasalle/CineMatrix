@@ -1,8 +1,8 @@
-# CineMatrix Studio v3.2 — Screenwriter & Creator Onboarding Guide
+# CineMatrix Studio v3.3 — Screenwriter & Creator Onboarding Guide
 > **"From Final Draft to Animatics, Table Read & 300 DPI Graphic Novel in 60 Seconds."**  
 > **Founder & Sovereign Architect:** Kirk LaSalle  
 > **Platform Version:** 3.3.0 (Oscar Prestige Edition)
-> **Repository:** `d:\Projects\cinematrix`
+> **Repository:** [github.com/kirklasalle/CineMatrix](https://github.com/kirklasalle/CineMatrix)
 
 ---
 
@@ -18,14 +18,20 @@ Traditional film pre-production is slow and exorbitantly expensive: hiring human
 
 CineMatrix runs completely private on your local machine with zero cloud lock-in.
 
-### 1-Click Desktop Startup
-1. Open the project root folder: `D:\Projects\cinematrix`.
-2. Double-click **`start_cinematrix.bat`** (or run `python desktop_launcher.py`).
+### 1-Click Desktop Startup (Release Bundle)
+The only prerequisite is **Python 3.12, 3.13, or 3.14** — 3.14 recommended ([python.org](https://www.python.org/downloads/)). If several versions are installed, the launcher picks a supported one automatically; Python 3.15 is not supported yet. Node.js is **not** required.
+
+1. Unzip the release download (for example `CineMatrix-Studio-v3.3.0-creator-beta.zip`) to a folder of your choice.
+2. Double-click **`start_cinematrix.bat`** in that folder.
 3. CineMatrix will automatically:
-   - Check local system dependencies (Python 3.10+, Node.js 18+).
+   - Locate a supported Python (3.12–3.14).
+   - On first run only, create a private `.venv` environment and install dependencies (a few minutes; needs internet).
    - Boot the secure FastAPI backend on `http://127.0.0.1:8000`.
-   - Boot the Vite React client on `http://localhost:5173`.
+   - Serve the CineMatrix interface on `http://127.0.0.1:5173`.
    - Open a dedicated, distraction-free desktop application window.
+
+> [!NOTE]
+> **Running from a source checkout instead?** Developers working from the Git repository also need Node.js 18+; `python desktop_launcher.py` starts the Vite dev server on `http://localhost:5173`. See the [Developer Guide](https://github.com/kirklasalle/CineMatrix/blob/main/docs/DEVELOPER_GUIDE.md).
 
 > [!TIP]
 > **Graceful Shutdown**: When finished, click the **Shutdown** button in the top-right header or press `Ctrl+C` in the terminal. CineMatrix cleanly commits all SQLite databases and flushes temp caches.

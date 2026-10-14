@@ -29,6 +29,17 @@ A full codebase and documentation audit ([AUDIT_2026-10-14.md](./AUDIT_2026-10-1
   - Verified: the previously successful exploit now returns `400 {"detail":"Invalid example script path."}`.
 - **Desktop bundles included development data.** The packaging ignore pattern did not exclude generated media and copied the local `storyboard.db` into `dist_release/`. The builder now excludes databases, logs, caches, test fixtures, environment files, and generated audio/video while retaining clean runtime directories.
 
+### 🔴 Fixed — Desktop Bundle Could Not Launch
+
+Release verification found that an unzipped `dist_release/` package could not open its interface:
+
+- **The launcher ran `npm run dev` in a `frontend/` folder the bundle does not contain**, and never served the prebuilt `frontend_dist/`. `desktop_launcher.py` now detects *bundled* vs *development* mode and, in bundles, serves `frontend_dist/` itself on `127.0.0.1:5173`. It pins JavaScript/CSS MIME types (the Windows registry can map `.js` to `text/plain`, which blocks ES modules), falls back to `index.html` for client routes, and refuses to share an occupied port.
+- **Node.js is no longer required to run a release.** `start_cinematrix.bat` creates a private `.venv` on first run and installs `backend/requirements.txt`, reinstalling automatically when requirements change.
+- **Python version selection.** The launcher picks Python 3.14 → 3.13 → 3.12 via the `py` launcher instead of whatever `python` is on PATH. Python 3.15 has no `onnxruntime` wheels yet, so `chromadb` cannot install on it. A `.venv` built with an unsupported version is rebuilt.
+- **The app window no longer shuts itself down.** Edge/Chrome app mode now uses a dedicated profile, so the launch is not handed to an already-running browser, which used to return immediately and trigger cleanup. Default-browser fallback waits for Ctrl+C instead of exiting.
+- **Stale `v3.2` strings removed** from the launcher banner, User-Agent, batch file, and onboarding guide. The onboarding quickstart now describes the bundle install, not a developer checkout.
+- **New `--smoke-test` and `--no-window` launcher flags**, plus a **Windows CI job** that builds the bundle, copies it to a clean directory, and runs the real `start_cinematrix.bat --smoke-test`, verifying first-run setup, `/health`, interface assets, client routing, and CORS.
+
 ### 🛠️ Fixed — Tooling & Consistency
 
 - **Restored frontend lint.** `package.json` declared a `lint` script but no ESLint configuration existed anywhere in `frontend/`, so `npm run lint` failed with *"ESLint couldn't find a configuration file"*. Added `frontend/.eslintrc.cjs` (TypeScript + React Hooks + React Refresh) and configured `no-constant-condition` to permit the SSE read loop.
@@ -43,7 +54,8 @@ A full codebase and documentation audit ([AUDIT_2026-10-14.md](./AUDIT_2026-10-1
   - absolute-path and drive-letter rejection;
   - the dependency contract (required packages declared, legacy Google SDK absent);
   - version consistency across OpenAPI, `/health`, `/`, and the desktop build manifest.
-- Suite total: **104 → 117 tests, all passing.**
+- New `backend/tests/test_desktop_launcher.py` (14 tests) covering bundle/development mode detection, the bundled interface server (MIME types, SPA fallback, 404s, path traversal, occupied-port refusal), single-sourced launcher versions, and the Python-only CRLF batch launcher.
+- Suite total: **104 → 131 tests, all passing.**
 
 ### 📚 Documentation
 
